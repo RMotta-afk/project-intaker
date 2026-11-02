@@ -11,16 +11,17 @@ const original = {
 };
 
 export const intakeFixtures = {
-  pending: { ...original, status: "PENDING" },
-  processing: { ...original, status: "PROCESSING" },
+  pending: { ...original, status: "PENDING", retryAvailable: false },
+  processing: { ...original, status: "PROCESSING", retryAvailable: false },
   completed: {
     ...original,
     status: "COMPLETED",
+    retryAvailable: false,
     triage: {
       summary: "The client wants a refreshed customer portal. Integration details need discovery.",
       tags: ["Portal", "Retail", "Redesign"],
       risks: ["Confirm identity and payment integrations."],
     },
   },
-  failed: { ...original, status: "FAILED", errorCode: "PROVIDER_UNAVAILABLE" },
+  failed: { ...original, status: "FAILED", errorCode: "PROVIDER_UNAVAILABLE", retryAvailable: true },
 } satisfies Record<string, PublicIntake>;
