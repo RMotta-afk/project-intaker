@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { PublicIntake } from "@/contracts/intake";
 import { IntakeDetail } from "./intake-detail";
+import styles from "./intake-detail.module.css";
 
 export function IntakeDetailLive({ initialIntake }: { initialIntake: PublicIntake }) {
   const [intake, setIntake] = useState(initialIntake);
@@ -45,9 +46,14 @@ export function IntakeDetailLive({ initialIntake }: { initialIntake: PublicIntak
     }
   }
 
-  return <>
+  return <div className={styles.livePage}>
     <IntakeDetail intake={intake} />
-    {intake.retryAvailable && <button type="button" onClick={() => void retry()} disabled={retrying}>{retrying ? "Retrying…" : "Retry triage"}</button>}
+    {intake.retryAvailable && <div className={styles.retryRow}>
+      <button className={styles.retryButton} type="button" onClick={() => void retry()} disabled={retrying}>
+        <span className={retrying ? styles.retrySpinner : styles.retryIcon} aria-hidden="true">{retrying ? "" : "↻"}</span>
+        {retrying ? "Retrying triage…" : "Retry triage"}
+      </button>
+    </div>}
     {error && <p role="alert">{error} <button type="button" onClick={() => void refresh()}>Refresh</button></p>}
-  </>;
+  </div>;
 }

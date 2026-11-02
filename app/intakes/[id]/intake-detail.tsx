@@ -33,7 +33,10 @@ export function IntakeDetail({ intake }: { intake: PublicIntake }) {
 
   return (
     <article className={styles.page}>
-      <Link className={styles.backLink} href="/">← All requests</Link>
+      <nav className={styles.navigation} aria-label="Request actions">
+        <Link className={styles.backLink} href="/">← All requests</Link>
+        <Link className={styles.createLink} href="/new">＋ New project</Link>
+      </nav>
       <header className={styles.header}>
         <div>
           <p className={styles.eyebrow}>PROJECT REQUEST</p>

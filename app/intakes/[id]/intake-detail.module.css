@@ -1,5 +1,18 @@
 .page { display: grid; gap: 1.25rem; }
+.livePage { display: grid; gap: 1rem; }
+.retryRow { display: flex; justify-content: flex-end; }
+.retryButton { align-items: center; background: #146b4b; border: 0; border-radius: 8px; color: #fff; cursor: pointer; display: inline-flex; font: inherit; font-size: .84rem; font-weight: 700; gap: .45rem; min-height: 2.3rem; padding: .5rem .75rem; }
+.retryButton:hover:not(:disabled) { background: #0f553b; }
+.retryButton:focus-visible { outline: 3px solid #78b59c; outline-offset: 3px; }
+.retryButton:disabled { cursor: wait; opacity: .72; }
+.retryIcon { font-size: 1.1rem; line-height: 1; }
+.retrySpinner { animation: retrySpin .8s linear infinite; border: 2px solid #ffffff75; border-right-color: #fff; border-radius: 50%; height: .9rem; width: .9rem; }
+@keyframes retrySpin { to { transform: rotate(360deg); } }
+.navigation { align-items: center; display: flex; gap: 1rem; justify-content: space-between; }
 .backLink { color: #28664d; font-size: .9rem; font-weight: 700; justify-self: start; text-decoration: none; }
+.createLink { background: #146b4b; border-radius: 8px; color: #fff; font-size: .9rem; font-weight: 700; padding: .65rem .9rem; text-decoration: none; }
+.createLink:hover { background: #0f553b; }
+.createLink:focus-visible { outline: 3px solid #78b59c; outline-offset: 3px; }
 .backLink:hover { text-decoration: underline; }
 .backLink:focus-visible { border-radius: 3px; outline: 3px solid #78b59c; outline-offset: 3px; }
 .header { align-items: center; display: flex; gap: 1.5rem; justify-content: space-between; padding: .5rem 0 .8rem; }
