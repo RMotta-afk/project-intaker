@@ -1,12 +1,11 @@
 "use client";
 
 import { useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-import { IntakeInputSchema, type IntakeInput } from "@/contracts/intake";
+import { IndustrySuggestionsSchema, IndustryTagResponseSchema, INTAKE_CURRENCIES, IntakeCurrencySchema, IntakeSubmissionSchema, type IntakeSubmission } from "@/contracts/intake";
 import styles from "./intake-form.module.css";
 
-type FieldName = keyof IntakeInput;
 type TextFieldName = "title" | "description";
-type ValidationField = FieldName | "budget" | "timeline";
+type ValidationField = TextFieldName | "industry" | "budget" | "timeline";
 
 const fields: Array<{
   name: TextFieldName;
@@ -20,45 +19,22 @@ const fields: Array<{
 ];
 
 const validationOrder: ValidationField[] = ["title", "description", "industry", "budget", "timeline"];
-const currencies = ["USD", "EUR", "GBP", "BRL", "CAD", "AUD", "JPY", "CHF", "INR", "MXN", "SGD"] as const;
-
-function formatBudget(start: string, end: string, currency: string): string {
-  if (!start || !end) return "";
-  const money = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    currencyDisplay: "code",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  });
-  return money.format(Number(start.replaceAll(",", ""))) + " – " + money.format(Number(end.replaceAll(",", "")));
-}
+const currencies = INTAKE_CURRENCIES;
 
 function formatBudgetInput(raw: string): string {
-  const cleaned = raw.replace(/[^\d.]/gu, "");
-  const decimalAt = cleaned.indexOf(".");
-  const integer = (decimalAt < 0 ? cleaned : cleaned.slice(0, decimalAt)).replace(/^0+(?=\d)/u, "");
+  const cleaned = raw.replaceAll(",", "").replace(/[^\d.]/gu, "");
+  const parts = cleaned.split(".");
+  const integer = (parts[0] ?? "").replace(/^0+(?=\d)/u, "");
   const grouped = integer.replace(/\B(?=(\d{3})+(?!\d))/gu, ",");
-  if (decimalAt < 0) return grouped;
-  const fraction = cleaned.slice(decimalAt + 1).replaceAll(".", "").slice(0, 2);
-  return `${grouped}.${fraction}`;
+  return parts.length === 1 ? grouped : `${grouped}.${parts.slice(1).join(".")}`;
 }
 
-function formatDate(value: string): string {
-  return new Date(value + "T00:00:00.000Z").toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC",
-  });
-}
-
-function messageForIssue(field: FieldName, issueMessage: string): string {
+function messageForIssue(field: ValidationField, issueMessage: string): string {
   if (field === "title") return issueMessage.includes("Too big") ? "Project title must be 160 characters or fewer." : "Project title must have a value.";
   if (field === "description") return issueMessage.includes("Too big") ? "Project description must be 10,000 characters or fewer." : "Project description must have a value.";
-  if (field === "industry") return issueMessage.includes("Too big") ? "Industry tags must fit within 120 characters in total." : "Add at least one industry.";
-  if (field === "budget") return "Enter a valid budget range.";
-  return "Choose a valid project date range.";
+  if (field === "industry") return issueMessage.includes("distinct") ? "Remove duplicate industry tags." : issueMessage.includes("120") ? issueMessage : issueMessage.includes("five") ? issueMessage : "Add one to five industry tags, each 60 characters or fewer.";
+  if (field === "budget") return issueMessage.includes("Maximum budget") ? issueMessage : issueMessage.includes("too large") ? "Budget amounts must be below 1 trillion." : "Enter both budget amounts with no more than two decimal places.";
+  return issueMessage.includes("on or after") ? issueMessage : "Choose valid start and target dates.";
 }
 
 export function IntakeForm({
@@ -66,7 +42,7 @@ export function IntakeForm({
   saving = false,
   submitError,
 }: {
-  onSubmit: (input: IntakeInput) => void;
+  onSubmit: (input: IntakeSubmission) => void;
   saving?: boolean;
   submitError?: string;
 }) {
@@ -110,35 +86,21 @@ export function IntakeForm({
     end: string,
   ) {
     const nextErrors: Partial<Record<ValidationField, string>> = {};
-    const minValue = Number(min.replaceAll(",", ""));
-    const maxValue = Number(max.replaceAll(",", ""));
-
-    if (!nextValues.title.trim()) nextErrors.title = "Project title must have a value.";
-    if (!nextValues.description.trim()) nextErrors.description = "Project description must have a value.";
-    if (tags.length === 0) nextErrors.industry = "Add at least one industry.";
-
-    if (!min || !max) {
-      nextErrors.budget = "Enter both a minimum and maximum budget.";
-    } else if (!Number.isFinite(minValue) || !Number.isFinite(maxValue) || minValue < 0 || maxValue < minValue) {
-      nextErrors.budget = "Maximum budget must be at least the minimum budget.";
-    }
-
-    if (!start || !end) {
-      nextErrors.timeline = "Choose both a start date and a target completion date.";
-    } else if (end < start) {
-      nextErrors.timeline = "Target completion must be on or after the start date.";
-    }
-
-    const contractInput = {
+    const submission = {
       ...nextValues,
-      industry: tags.join(", "),
-      budget: nextErrors.budget ? "validating budget range" : formatBudget(min, max, budgetCurrency),
-      timeline: nextErrors.timeline ? "validating project dates" : formatDate(start) + " – " + formatDate(end),
+      industryTags: tags,
+      budgetRange: { currency: budgetCurrency, minimum: min, maximum: max },
+      dateRange: { start, end },
     };
-    const result = IntakeInputSchema.safeParse(contractInput);
+    const result = IntakeSubmissionSchema.safeParse(submission);
     if (!result.success) {
       for (const issue of result.error.issues) {
-        const field = issue.path[0] as FieldName | undefined;
+        const path = issue.path[0];
+        const field: ValidationField | undefined = path === "industryTags" ? "industry"
+          : path === "budgetRange" ? "budget"
+            : path === "dateRange" ? "timeline"
+              : path === "title" || path === "description" ? path
+                : undefined;
         if (field && !nextErrors[field]) nextErrors[field] = messageForIssue(field, issue.message);
       }
     }
@@ -188,9 +150,9 @@ export function IntakeForm({
     for (const tag of pendingTags) void saveIndustryTag(tag);
     onSubmit({
       ...values,
-      industry: tagsToSubmit.join(", "),
-      budget: formatBudget(budgetStart, budgetEnd, budgetCurrency),
-      timeline: formatDate(startDate) + " – " + formatDate(endDate),
+      industryTags: tagsToSubmit,
+      budgetRange: { currency: budgetCurrency, minimum: budgetStart, maximum: budgetEnd },
+      dateRange: { start: startDate, end: endDate },
     });
   }
 
@@ -220,8 +182,10 @@ export function IntakeForm({
     try {
       const response = await fetch("/api/industries", { cache: "no-store" });
       if (!response.ok) throw new Error("Industry suggestions are unavailable.");
-      const result = await response.json() as { tags?: unknown };
-      setIndustryOptions(Array.isArray(result.tags) ? result.tags.filter((tag): tag is string => typeof tag === "string") : []);
+      const body: unknown = await response.json();
+      const result = IndustrySuggestionsSchema.safeParse(body);
+      if (!result.success) throw new Error("Industry suggestions had an invalid response.");
+      setIndustryOptions(result.data.tags);
       setIndustryLoaded(true);
     } catch {
       industryLoadStarted.current = false;
@@ -238,8 +202,10 @@ export function IntakeForm({
         body: JSON.stringify({ name }),
       });
       if (!response.ok) return;
-      const result = await response.json() as { name?: string };
-      if (result.name) setIndustryOptions((options) => options.some((item) => item.toLocaleLowerCase() === result.name?.toLocaleLowerCase()) ? options : [...options, result.name!].sort((a, b) => a.localeCompare(b)));
+      const body: unknown = await response.json();
+      const result = IndustryTagResponseSchema.safeParse(body);
+      if (!result.success) return;
+      setIndustryOptions((options) => options.some((item) => item.toLocaleLowerCase() === result.data.name.toLocaleLowerCase()) ? options : [...options, result.data.name].sort((a, b) => a.localeCompare(b)));
     } catch {
       // Intake creation remains available if saving a suggestion fails.
     }
@@ -356,18 +322,21 @@ export function IntakeForm({
         <p className={styles.hint} id="budget-hint">Choose a currency and enter the lowest and highest total project values.</p>
         <div className={`${styles.field} ${styles.budgetCurrency}`}>
           <label htmlFor="budget-currency">Currency</label>
-          <select id="budget-currency" name="budget-currency" value={budgetCurrency} aria-describedby="budget-hint" onChange={(event) => setBudgetCurrency(event.target.value as (typeof currencies)[number])}>
+          <select id="budget-currency" name="budget-currency" value={budgetCurrency} aria-describedby="budget-hint" onChange={(event) => {
+            const currency = IntakeCurrencySchema.safeParse(event.target.value);
+            if (currency.success) setBudgetCurrency(currency.data);
+          }}>
             {currencies.map((currency) => <option key={currency} value={currency}>{currency}</option>)}
           </select>
         </div>
         <div className={`${styles.pairedFields} ${styles.budgetValues}`}>
           <div className={styles.field}>
             <label htmlFor="budget-start">Minimum budget</label>
-            <input id="budget-start" name="budget-start" type="text" inputMode="decimal" placeholder="20,000" value={budgetStart} aria-invalid={Boolean(errors.budget)} aria-describedby={errors.budget ? "budget-error" : "budget-hint"} onChange={(event) => updateBudget(formatBudgetInput(event.target.value), budgetEnd)} />
+            <input id="budget-start" name="budget-start" type="text" inputMode="decimal" maxLength={18} placeholder="20,000" value={budgetStart} aria-invalid={Boolean(errors.budget)} aria-describedby={errors.budget ? "budget-error" : "budget-hint"} onChange={(event) => updateBudget(formatBudgetInput(event.target.value), budgetEnd)} />
           </div>
           <div className={styles.field}>
             <label htmlFor="budget-end">Maximum budget</label>
-            <input id="budget-end" name="budget-end" type="text" inputMode="decimal" placeholder="30,000" value={budgetEnd} aria-invalid={Boolean(errors.budget)} aria-describedby={errors.budget ? "budget-error" : "budget-hint"} onChange={(event) => updateBudget(budgetStart, formatBudgetInput(event.target.value))} />
+            <input id="budget-end" name="budget-end" type="text" inputMode="decimal" maxLength={18} placeholder="30,000" value={budgetEnd} aria-invalid={Boolean(errors.budget)} aria-describedby={errors.budget ? "budget-error" : "budget-hint"} onChange={(event) => updateBudget(budgetStart, formatBudgetInput(event.target.value))} />
           </div>
         </div>
         {errors.budget && <p className={styles.error} id="budget-error">{errors.budget}</p>}

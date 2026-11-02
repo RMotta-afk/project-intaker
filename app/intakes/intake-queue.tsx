@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { IntakeListResponseSchema } from "@/contracts/intake";
 import type { IntakeListItem } from "@/server/intakes/read";
 import { IntakeList } from "./intake-list";
 
@@ -12,8 +13,10 @@ export function IntakeQueue({ initialIntakes }: { initialIntakes: IntakeListItem
     try {
       const response = await fetch("/api/intakes", { cache: "no-store", signal });
       if (!response.ok) throw new Error("Unable to refresh requests.");
-      const body = await response.json() as { intakes: IntakeListItem[] };
-      setIntakes(body.intakes);
+      const body: unknown = await response.json();
+      const parsed = IntakeListResponseSchema.safeParse(body);
+      if (!parsed.success) throw new Error("The request list response was invalid.");
+      setIntakes(parsed.data.intakes);
       setError(undefined);
     } catch (cause) {
       if (signal?.aborted) return;

@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { GenerateTriage, IntakeInput } from "../../contracts/intake";
+import type { IntakeInput } from "../../contracts/intake";
 import { claimNextIntake } from "./claim";
 import { completeClaim, failClaim, type FailureResult } from "./outcome";
 
@@ -10,6 +10,8 @@ export type WorkerRunResult =
   | { kind: "failed"; intakeId: string; outcome: FailureResult }
   | { kind: "stale-token"; intakeId: string }
   | { kind: "storage-error"; intakeId: string };
+
+export type TriageGenerator = (intake: IntakeInput) => Promise<unknown>;
 
 export interface WorkerOptions {
   pollIntervalMs?: number;
@@ -24,7 +26,7 @@ export interface WorkerOptions {
 
 /** Claim one saved intake, call the adapter outside a DB transaction, then commit by lease token. */
 export async function runWorkerOnce(
-  generateTriage: GenerateTriage,
+  generateTriage: TriageGenerator,
   options: Pick<WorkerOptions, "leaseMs" | "now" | "random" | "createToken"> = {},
 ): Promise<WorkerRunResult> {
   const claim = await claimNextIntake({
@@ -68,12 +70,12 @@ export async function runWorkerOnce(
 
 /** Run a single-concurrency poll loop until its AbortSignal is cancelled. */
 export async function runWorker(
-  generateTriage: GenerateTriage,
+  generateTriage: TriageGenerator,
   options: WorkerOptions = {},
 ): Promise<void> {
   const pollIntervalMs = options.pollIntervalMs ?? 1_000;
-  if (!Number.isFinite(pollIntervalMs) || pollIntervalMs < 0) {
-    throw new RangeError("Poll interval must be a non-negative number.");
+  if (!Number.isSafeInteger(pollIntervalMs) || pollIntervalMs < 10 || pollIntervalMs > 60_000) {
+    throw new RangeError("Poll interval must be a whole number between 10 and 60,000 milliseconds.");
   }
 
   const wait = options.wait ?? waitForPoll;

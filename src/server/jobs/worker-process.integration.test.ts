@@ -75,9 +75,9 @@ integration("separate worker process lifecycle", () => {
       body: JSON.stringify({
         title,
         description: "A process-level worker integration request.",
-        budget: "$12,000",
-        timeline: "Six weeks",
-        industry: "Software",
+        budgetRange: { currency: "USD", minimum: "12,000", maximum: "18,000" },
+        dateRange: { start: "2035-01-02", end: "2035-02-13" },
+        industryTags: ["Software"],
       }),
     }));
     expect(response.status).toBe(201);

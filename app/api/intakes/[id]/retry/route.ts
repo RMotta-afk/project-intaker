@@ -1,5 +1,6 @@
 import { IntakeIdSchema } from "@/server/intakes/read";
 import { retryIntake } from "@/server/jobs/retry";
+import { RetryIntakeResponseSchema } from "@/contracts/intake";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -33,10 +34,11 @@ export async function POST(_request: Request, context: RouteContext): Promise<Re
     );
   }
 
-  return Response.json({
+  const body = RetryIntakeResponseSchema.parse({
     id: result.intakeId,
     status: "PENDING",
     availableAt: result.availableAt.toISOString(),
     retryAvailable: false,
-  }, { status: 202 });
+  });
+  return Response.json(body, { status: 202 });
 }

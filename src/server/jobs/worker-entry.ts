@@ -1,21 +1,21 @@
 import { loadEnvConfig } from "@next/env";
 import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
-import { runWorker } from "./worker";
+import { runWorker, type TriageGenerator } from "./worker";
 import { disconnectDb } from "../db";
-import type { GenerateTriage } from "../../contracts/intake";
+import type { IntakeInput } from "../../contracts/intake";
 
-function readMilliseconds(name: string, fallback: number): number {
+function readMilliseconds(name: string, fallback: number, minimum: number, maximum: number): number {
   const configured = process.env[name];
   if (!configured) return fallback;
   const value = Number(configured);
-  if (!Number.isFinite(value) || value < 0) {
-    throw new Error(`${name} must be a non-negative number of milliseconds.`);
+  if (!Number.isSafeInteger(value) || value < minimum || value > maximum) {
+    throw new Error(`${name} must be a whole number between ${minimum} and ${maximum} milliseconds.`);
   }
   return value;
 }
 
-async function loadAdapter(): Promise<GenerateTriage> {
+async function loadAdapter(): Promise<TriageGenerator> {
   const configuredPath = process.env.WORKER_ADAPTER_MODULE;
   if (!configuredPath) {
     throw new Error("Set WORKER_ADAPTER_MODULE to a server-side module exporting generateTriage.");
@@ -27,11 +27,14 @@ async function loadAdapter(): Promise<GenerateTriage> {
     throw new Error("Worker adapter module must export generateTriage.");
   }
 
-  const generateTriage = loaded.generateTriage;
-  if (typeof generateTriage !== "function") {
+  const adapter = loaded.generateTriage;
+  if (typeof adapter !== "function") {
     throw new Error("Worker adapter generateTriage export must be a function.");
   }
-  return generateTriage as GenerateTriage;
+  return async (intake: IntakeInput) => {
+    const result: unknown = await adapter(intake);
+    return result;
+  };
 }
 
 async function main(): Promise<void> {
@@ -46,8 +49,8 @@ async function main(): Promise<void> {
     console.info("Intake worker started.");
     await runWorker(generateTriage, {
       signal: controller.signal,
-      pollIntervalMs: readMilliseconds("WORKER_POLL_INTERVAL_MS", 1_000),
-      leaseMs: readMilliseconds("WORKER_LEASE_MS", 120_000),
+      pollIntervalMs: readMilliseconds("WORKER_POLL_INTERVAL_MS", 1_000, 10, 60_000),
+      leaseMs: readMilliseconds("WORKER_LEASE_MS", 120_000, 1, 86_400_000),
       onResult(result) {
         if (result.kind === "idle") return;
         console.info(JSON.stringify(result));

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { PublicIntake } from "@/contracts/intake";
+import { PublicIntakeSchema, RetryIntakeResponseSchema, type PublicIntake } from "@/contracts/intake";
 import { IntakeDetail } from "./intake-detail";
 import styles from "./intake-detail.module.css";
 
@@ -14,7 +14,10 @@ export function IntakeDetailLive({ initialIntake }: { initialIntake: PublicIntak
     try {
       const response = await fetch(`/api/intakes/${encodeURIComponent(intake.id)}`, { cache: "no-store", signal });
       if (!response.ok) throw new Error("Could not refresh triage status.");
-      setIntake(await response.json() as PublicIntake);
+      const body: unknown = await response.json();
+      const parsed = PublicIntakeSchema.safeParse(body);
+      if (!parsed.success) throw new Error("The intake response was invalid.");
+      setIntake(parsed.data);
       setError(undefined);
     } catch (cause) {
       if (signal?.aborted) return;
@@ -38,6 +41,8 @@ export function IntakeDetailLive({ initialIntake }: { initialIntake: PublicIntak
     try {
       const response = await fetch(`/api/intakes/${encodeURIComponent(intake.id)}/retry`, { method: "POST" });
       if (!response.ok) throw new Error("Could not retry triage. Refresh and try again.");
+      const body: unknown = await response.json();
+      if (!RetryIntakeResponseSchema.safeParse(body).success) throw new Error("The retry response was invalid. Refresh and try again.");
       await refresh();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Could not retry triage.");

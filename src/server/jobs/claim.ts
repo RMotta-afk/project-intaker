@@ -31,7 +31,9 @@ export async function claimNextIntake(options: ClaimOptions = {}): Promise<Claim
   const createToken = options.createToken ?? randomUUID;
 
   if (!Number.isFinite(now.getTime())) throw new RangeError("A valid claim time is required.");
-  if (!Number.isFinite(leaseMs) || leaseMs <= 0) throw new RangeError("Lease duration must be positive.");
+  if (!Number.isSafeInteger(leaseMs) || leaseMs <= 0 || leaseMs > 86_400_000) {
+    throw new RangeError("Lease duration must be a positive whole number no longer than one day.");
+  }
 
   const leaseExpiresAt = new Date(now.getTime() + leaseMs);
   const db = getDb();

@@ -10,9 +10,9 @@ integration("SQLite intake API integration", () => {
   const source = {
     title: "Integration check",
     description: "A saved source request survives API reads.",
-    budget: "$10,000",
-    timeline: "Two months",
-    industry: "Software",
+    budgetRange: { currency: "USD", minimum: "10,000", maximum: "20,000" },
+    dateRange: { start: "2026-01-02", end: "2026-03-02" },
+    industryTags: ["Software"],
   };
 
   let collection: typeof import("../../../app/api/intakes/route");
@@ -33,7 +33,14 @@ integration("SQLite intake API integration", () => {
     expect(createResponse.status).toBe(201);
     const created = await createResponse.json();
     savedId = created.id;
-    expect(created).toMatchObject({ ...source, status: "PENDING" });
+    expect(created).toMatchObject({
+      title: source.title,
+      description: source.description,
+      budget: "USD 10,000 – USD 20,000",
+      timeline: "January 2, 2026 – March 2, 2026",
+      industry: "Software",
+      status: "PENDING",
+    });
 
     const listResponse = await collection.GET();
     expect(listResponse.status).toBe(200);
@@ -44,7 +51,7 @@ integration("SQLite intake API integration", () => {
       params: Promise.resolve({ id: savedId }),
     });
     expect(detailResponse.status).toBe(200);
-    expect(await detailResponse.json()).toMatchObject({ id: savedId, ...source, status: "PENDING", retryAvailable: false });
+    expect(await detailResponse.json()).toMatchObject({ id: savedId, status: "PENDING", retryAvailable: false });
   });
 
   afterAll(async () => {

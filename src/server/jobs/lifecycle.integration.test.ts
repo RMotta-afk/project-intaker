@@ -1,4 +1,5 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
+import { triageFixture } from "../../contracts/fixtures";
 import { rm } from "node:fs/promises";
 import { resolve } from "node:path";
 
@@ -10,15 +11,18 @@ integration("SQLite retry through the worker", () => {
   const source = {
     title: "Retry integration check",
     description: "The original source must remain unchanged across retry.",
-    budget: "$15,000",
-    timeline: "One quarter",
+    budgetRange: { currency: "USD", minimum: "15,000", maximum: "25,000" },
+    dateRange: { start: "2035-01-01", end: "2035-04-01" },
+    industryTags: ["Software"],
+  };
+  const storedSource = {
+    title: source.title,
+    description: source.description,
+    budget: "USD 15,000 – USD 25,000",
+    timeline: "January 1, 2035 – April 1, 2035",
     industry: "Software",
   };
-  const triage = {
-    summary: "The client needs a new software workflow. Access details need discovery.",
-    tags: ["Workflow", "Software", "Discovery"],
-    risks: ["Confirm access control requirements."],
-  };
+  const triage = triageFixture;
   const start = new Date("2035-01-01T12:00:00.000Z");
 
   let createRoute: typeof import("../../../app/api/intakes/route");
@@ -55,7 +59,7 @@ integration("SQLite retry through the worker", () => {
     });
 
     const beforeRetry = await db.getDb().intake.findUnique({ where: { id } });
-    expect(beforeRetry).toMatchObject({ ...source, status: "FAILED", attempt: 1 });
+    expect(beforeRetry).toMatchObject({ ...storedSource, status: "FAILED", attempt: 1 });
     const failedDetail = await detailRoute.GET(new Request(`http://localhost/api/intakes/${id}`), {
       params: Promise.resolve({ id }),
     });
@@ -80,7 +84,8 @@ integration("SQLite retry through the worker", () => {
       db.getDb().intake.count({ where: { id } }),
     ]);
     expect(count).toBe(1);
-    expect(finalRecord).toMatchObject({ ...source, id, status: "COMPLETED", attempt: 1, triageJson: JSON.stringify(triage) });
+    expect(finalRecord).toMatchObject({ ...storedSource, id, status: "COMPLETED", attempt: 1, triageJson: expect.any(String) });
+    expect(JSON.parse(finalRecord?.triageJson ?? "null")).toEqual(triage);
   });
 
   afterAll(async () => {
