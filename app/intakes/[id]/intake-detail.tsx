@@ -26,6 +26,14 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
+function renderBriefList(items: string[]) {
+  return items.length > 0 ? (
+    <ul className={styles.briefList}>
+      {items.map((item) => <li key={item}>{item}</li>)}
+    </ul>
+  ) : <span>Not stated in the request.</span>;
+}
+
 export function IntakeDetail({ intake }: { intake: PublicIntake }) {
   const failureMessage = intake.errorCode
     ? failureMessages[intake.errorCode] ?? "Triage could not be completed. Your request is safe."
@@ -92,6 +100,37 @@ export function IntakeDetail({ intake }: { intake: PublicIntake }) {
               <h3>Summary</h3>
               <p>{intake.triage.summary}</p>
             </div>
+            <section className={styles.briefBlock} aria-labelledby="project-brief-heading">
+              <h3 id="project-brief-heading">Project kickoff brief</h3>
+              <dl className={styles.briefGrid}>
+                <div>
+                  <dt>Objective</dt>
+                  <dd>{intake.triage.projectBrief.objective ?? "Not stated in the request."}</dd>
+                </div>
+                <div>
+                  <dt>Primary users</dt>
+                  <dd>{intake.triage.projectBrief.primaryUsers ?? "Not stated in the request."}</dd>
+                </div>
+                <div>
+                  <dt>Key requirements</dt>
+                  <dd>{renderBriefList(intake.triage.projectBrief.keyRequirements)}</dd>
+                </div>
+                <div>
+                  <dt>Constraints and dependencies</dt>
+                  <dd>{renderBriefList(intake.triage.projectBrief.constraints)}</dd>
+                </div>
+                <div className={styles.briefWide}>
+                  <dt>Success criteria</dt>
+                  <dd>{renderBriefList(intake.triage.projectBrief.successCriteria)}</dd>
+                </div>
+              </dl>
+            </section>
+            <section className={styles.followUp} aria-labelledby="follow-up-heading">
+              <h3 id="follow-up-heading">Questions to clarify with the requester</h3>
+              <ol className={styles.questions}>
+                {intake.triage.followUpQuestions.map((question) => <li key={question}>{question}</li>)}
+              </ol>
+            </section>
             <div className={styles.resultColumns}>
               <div>
                 <h3>Suggested tags</h3>
@@ -109,7 +148,7 @@ export function IntakeDetail({ intake }: { intake: PublicIntake }) {
           </div>
         ) : (
           <p className={styles.triagePending}>
-            {intake.status === "FAILED" ? "A triage result is not available yet." : "A summary, suggested tags, and risks will appear here when triage is complete."}
+            {intake.status === "FAILED" ? "A triage result is not available yet." : "A project brief, follow-up questions, suggested tags, and risks will appear here when triage is complete."}
           </p>
         )}
       </section>

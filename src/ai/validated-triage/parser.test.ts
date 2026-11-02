@@ -1,11 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { triageFixture } from "../../contracts/fixtures";
 import { parseTriageJson } from "./parser";
 
-const valid = {
-  summary: "The client needs a new project portal. Integration requirements need discovery.",
-  tags: ["Portal", "Retail", "Discovery"],
-  risks: ["Confirm the identity provider."],
-};
+const valid = triageFixture;
 
 describe("parseTriageJson", () => {
   it("parses a strict JSON object with the shared fields", () => {

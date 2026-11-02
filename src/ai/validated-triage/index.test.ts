@@ -1,11 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { triageFixture } from "../../contracts/fixtures";
 import { InvalidTriageOutputError, validateTriageResponse } from "./index";
 
-const validResponse = JSON.stringify({
-  summary: "The client wants a portal refresh. Integration details need discovery.",
-  tags: ["Portal", "Retail", "Discovery"],
-  risks: ["Confirm required account integrations."],
-});
+const validResponse = JSON.stringify(triageFixture);
 
 describe("validateTriageResponse", () => {
   it("returns validated output with only contract normalization", () => {
@@ -16,10 +13,10 @@ describe("validateTriageResponse", () => {
   it.each([
     "",
     "{ malformed",
-    JSON.stringify({ summary: "Only one sentence.", tags: ["A", "B", "C"], risks: ["Risk."] }),
-    JSON.stringify({ summary: "Two. Sentences.", tags: ["A", "a", "C"], risks: ["Risk."] }),
-    JSON.stringify({ summary: "Two. Sentences.", tags: ["A", "B", "C"], risks: [] }),
-    JSON.stringify({ summary: "Two. Sentences.", tags: ["A", "B", "C"], risks: ["Risk."], extra: true }),
+    JSON.stringify({ ...triageFixture, summary: "Only one sentence." }),
+    JSON.stringify({ ...triageFixture, summary: "Two. Sentences.", tags: ["A", "a", "C"] }),
+    JSON.stringify({ ...triageFixture, summary: "Two. Sentences.", risks: [] }),
+    JSON.stringify({ ...triageFixture, summary: "Two. Sentences.", extra: true }),
   ])("rejects invalid output as a typed safe failure", (content) => {
     expect(() => validateTriageResponse(content)).toThrow(InvalidTriageOutputError);
     try {

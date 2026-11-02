@@ -29,6 +29,15 @@ describe("OpenRouter transport", () => {
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
+  it("rejects malformed credentials and model configuration before making a request", async () => {
+    const fetchImpl = vi.fn();
+    await expect(requestOpenRouterCompletion(intake, { apiKey: "bad key", fetchImpl }))
+      .rejects.toMatchObject({ code: "PROVIDER_AUTH", retryable: false });
+    await expect(requestOpenRouterCompletion(intake, { apiKey: "secret-key", model: "model name with spaces", fetchImpl }))
+      .rejects.toMatchObject({ code: "PROVIDER_ERROR", retryable: false });
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
   it("makes one bounded authenticated request and returns message content", async () => {
     const calls: Array<{ url: RequestInfo | URL; init?: RequestInit }> = [];
     const fetchImpl: typeof fetch = async (url, init) => {
@@ -44,7 +53,7 @@ describe("OpenRouter transport", () => {
     const { url, init } = calls[0];
     expect(url).toBe(OPENROUTER_ENDPOINT);
     expect(init?.headers).toMatchObject({ Authorization: "Bearer secret-key" });
-    expect(JSON.parse(String(init?.body))).toMatchObject({ max_tokens: 700, model: "openai/gpt-4o-mini" });
+    expect(JSON.parse(String(init?.body))).toMatchObject({ max_tokens: 1_600, model: "openai/gpt-4o-mini" });
     expect(init?.signal).toBeInstanceOf(AbortSignal);
   });
 
@@ -99,5 +108,26 @@ describe("OpenRouter transport", () => {
     }));
     await expect(requestOpenRouterCompletion(intake, { apiKey: "secret-key", fetchImpl: oversizedFetch }))
       .rejects.toMatchObject({ code: "PROVIDER_ERROR", retryable: false });
+
+    const hugeEnvelopeFetch = vi.fn(async () => new Response(`{"choices":[],"unused":"${"x".repeat(65_000)}"}`, {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    }));
+    await expect(requestOpenRouterCompletion(intake, { apiKey: "secret-key", fetchImpl: hugeEnvelopeFetch }))
+      .rejects.toMatchObject({ code: "PROVIDER_ERROR", retryable: false });
+  });
+
+  it.each([
+    { choices: "not-an-array" },
+    { choices: [{ message: { content: 42 } }] },
+    { choices: [{ message: {} }] },
+  ])("rejects a successful HTTP response with an invalid OpenRouter envelope: %j", async (body) => {
+    const fetchImpl = vi.fn(async () => response(200, body));
+    await expect(requestOpenRouterCompletion(intake, { apiKey: "secret-key", fetchImpl }))
+      .rejects.toMatchObject({
+        code: "PROVIDER_ERROR",
+        retryable: false,
+        message: "PROVIDER_ERROR",
+      });
   });
 });

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { triageFixture } from "../../contracts/fixtures";
 
 const dbMocks = vi.hoisted(() => ({
   findFirst: vi.fn(),
@@ -16,11 +17,7 @@ vi.mock("../db", () => ({
 
 import { completeClaim, failClaim } from "./outcome";
 
-const triage = {
-  summary: "The client needs a refreshed project portal. Integration details need discovery.",
-  tags: ["Portal", "Retail", "Redesign"],
-  risks: ["Confirm identity and payment integrations."],
-};
+const triage = triageFixture;
 const fixedNow = new Date("2026-11-02T12:00:00.000Z");
 
 describe("guarded job outcomes", () => {
@@ -40,19 +37,21 @@ describe("guarded job outcomes", () => {
     await expect(completeClaim("intake-1", "lease-current", triage, { now: () => fixedNow }))
       .resolves.toEqual({ kind: "completed" });
 
-    expect(dbMocks.updateMany).toHaveBeenCalledWith({
+    expect(dbMocks.updateMany).toHaveBeenCalledTimes(1);
+    const update = dbMocks.updateMany.mock.calls[0][0];
+    expect(update).toMatchObject({
       where: { id: "intake-1", status: "PROCESSING", leaseToken: "lease-current" },
       data: expect.objectContaining({
         status: "COMPLETED",
-        triageJson: JSON.stringify(triage),
         errorCode: null,
         leaseToken: null,
         leaseExpiresAt: null,
         updatedAt: fixedNow,
       }),
     });
-    expect(dbMocks.updateMany.mock.calls[0][0].data).not.toHaveProperty("title");
-    expect(dbMocks.updateMany.mock.calls[0][0].data).not.toHaveProperty("description");
+    expect(JSON.parse(update.data.triageJson)).toEqual(triage);
+    expect(update.data).not.toHaveProperty("title");
+    expect(update.data).not.toHaveProperty("description");
   });
 
   it("rejects invalid output without writing", async () => {

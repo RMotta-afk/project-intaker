@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { triageFixture } from "../../contracts/fixtures";
 
 const dbMocks = vi.hoisted(() => ({
   findMany: vi.fn(),
@@ -13,11 +14,7 @@ vi.mock("../db", () => ({
 import { getIntake, listIntakes } from "./read";
 
 const createdAt = new Date("2026-11-02T12:00:00.000Z");
-const triage = {
-  summary: "The client needs a refreshed portal. Integration details need discovery.",
-  tags: ["Portal", "Retail", "Redesign"],
-  risks: ["Confirm identity and payment integrations."],
-};
+const triage = triageFixture;
 
 function record(overrides: Record<string, unknown> = {}) {
   return {
@@ -78,6 +75,26 @@ describe("intake reads", () => {
     });
     expect(result).not.toHaveProperty("attempt");
     expect(result).not.toHaveProperty("leaseToken");
+  });
+
+  it("upgrades a previously stored triage result when reading it", async () => {
+    const legacyTriage = {
+      summary: "The client wants a refreshed customer portal. Integration details need discovery.",
+      tags: ["Portal", "Retail", "Discovery"],
+      risks: ["Confirm which commerce integrations are required."],
+    };
+    dbMocks.findUnique.mockResolvedValue(record({ triageJson: JSON.stringify(legacyTriage) }));
+
+    const result = await getIntake("cmvypx38700008ats8z8y8brj");
+
+    expect(result?.triage).toMatchObject({
+      ...legacyTriage,
+      projectBrief: { objective: null, primaryUsers: null, keyRequirements: [], constraints: [], successCriteria: [] },
+      followUpQuestions: [
+        "What outcome should define success for this project?",
+        "Which users, workflows, and integrations should the team prioritize first?",
+      ],
+    });
   });
 
   it("keeps source readable if stored triage JSON is corrupt", async () => {

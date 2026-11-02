@@ -14,7 +14,7 @@ export function parseTriageJson(content: string): unknown {
 
   let parsed: unknown;
   try {
-    parsed = JSON.parse(content) as unknown;
+    parsed = JSON.parse(content);
   } catch {
     throw new Error("Provider returned malformed triage JSON.");
   }

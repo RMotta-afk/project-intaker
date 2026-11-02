@@ -44,6 +44,18 @@
 .result h3 { color: #34463c; font-size: .84rem; margin: 0 0 .65rem; }
 .summaryBlock { border-bottom: 1px solid #e3eae5; padding-bottom: 1.25rem; }
 .summaryBlock p { color: #202c26; line-height: 1.7; margin: 0; max-width: 75ch; }
+.briefBlock { background: #f7faf8; border: 1px solid #dce8e0; border-radius: 11px; margin-top: 1.25rem; padding: 1.1rem; }
+.briefBlock h3, .followUp h3 { color: #34463c; font-size: .9rem; margin: 0 0 .9rem; }
+.briefGrid { display: grid; gap: 1rem 1.4rem; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; }
+.briefGrid > div { min-width: 0; }
+.briefGrid dt { color: #64716b; font-size: .76rem; font-weight: 750; margin: 0 0 .4rem; }
+.briefGrid dd { color: #202c26; font-size: .9rem; line-height: 1.55; margin: 0; overflow-wrap: anywhere; }
+.briefWide { grid-column: 1 / -1; }
+.briefList { display: grid; gap: .45rem; list-style: disc; margin: 0; padding-left: 1.1rem; }
+.briefList li { padding-left: .15rem; }
+.followUp { background: #edf5ef; border-left: 3px solid #167452; border-radius: 8px; margin-top: 1rem; padding: 1rem 1.1rem; }
+.followUp h3 { margin-bottom: .7rem; }
+.questions { color: #293a31; display: grid; gap: .55rem; line-height: 1.55; margin: 0; padding-left: 1.25rem; }
 .resultColumns { display: grid; gap: 1.5rem; grid-template-columns: repeat(2, minmax(0, 1fr)); padding-top: 1.25rem; }
 .tags, .risks { display: flex; flex-wrap: wrap; gap: .5rem; list-style: none; margin: 0; padding: 0; }
 .tags li { background: #edf5ef; border: 1px solid #cddfd2; border-radius: 999px; color: #315d43; font-size: .82rem; padding: .42rem .65rem; }
@@ -52,8 +64,9 @@
 .triagePending { background: #f5f8f6; border-radius: 8px; color: #5e6d67; line-height: 1.6; margin: 1.25rem 0 0; padding: 1rem; }
 @media (max-width: 620px) {
   .header { align-items: start; flex-direction: column; }
-  .fields, .resultColumns { grid-template-columns: 1fr; }
+  .fields, .briefGrid, .resultColumns { grid-template-columns: 1fr; }
   .descriptionField { grid-column: auto; }
+  .briefWide { grid-column: auto; }
   .sectionHeading { flex-direction: column; }
   .sourceBadge, .advisory { white-space: normal; }
 }

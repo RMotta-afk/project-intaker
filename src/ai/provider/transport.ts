@@ -1,3 +1,4 @@
+import { z } from "zod";
 import type { TriageFailureCode } from "../../contracts/intake";
 import { buildTriageRequest } from "./request";
 import type { IntakeInput } from "../../contracts/intake";
@@ -5,6 +6,7 @@ import type { IntakeInput } from "../../contracts/intake";
 export const OPENROUTER_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
 export const PROVIDER_TIMEOUT_MS = 15_000;
 const MAX_RESPONSE_CHARS = 16_000;
+const MAX_RESPONSE_BYTES = 64 * 1024;
 const MAX_DIAGNOSTIC_CHARS = 240;
 
 export type ProviderFailureCode = Extract<
@@ -26,10 +28,17 @@ export class ProviderTransportError extends Error {
   }
 }
 
-type ChatCompletionResponse = {
-  choices?: Array<{ message?: { content?: unknown } }>;
-  error?: { message?: unknown };
-};
+const OpenRouterResponseSchema = z.object({
+  choices: z.array(z.object({
+    message: z.object({ content: z.string().min(1) }).passthrough(),
+  }).passthrough()).min(1).optional(),
+  error: z.object({ message: z.unknown() }).passthrough().optional(),
+}).passthrough();
+const OpenRouterModelSchema = z.string().trim().min(1).max(200).regex(/^[A-Za-z0-9._:/-]+$/u);
+const OpenRouterApiKeySchema = z.string().min(8).max(512).regex(/^\S+$/u);
+const OpenRouterSiteUrlSchema = z.string().trim().url().max(2_000);
+
+type OpenRouterResponse = z.infer<typeof OpenRouterResponseSchema>;
 
 type FetchLike = typeof fetch;
 
@@ -54,16 +63,37 @@ function safeDiagnostic(value: unknown, apiKey?: string): string | undefined {
 
 function getErrorMessage(body: string): string | undefined {
   try {
-    const parsed = JSON.parse(body) as ChatCompletionResponse;
-    return typeof parsed.error?.message === "string" ? parsed.error.message : undefined;
+    const value: unknown = JSON.parse(body);
+    const parsed = OpenRouterResponseSchema.safeParse(value);
+    if (!parsed.success) return undefined;
+    const message = parsed.data.error?.message;
+    return typeof message === "string" ? message : undefined;
   } catch {
     return undefined;
   }
 }
 
-async function readBody(response: Response): Promise<string> {
-  const body = await response.text();
-  return body.slice(0, MAX_RESPONSE_CHARS);
+async function readBody(response: Response): Promise<{ body: string; tooLarge: boolean }> {
+  if (!response.body) return { body: "", tooLarge: false };
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let bytesRead = 0;
+  let body = "";
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) return { body: body + decoder.decode(), tooLarge: false };
+      bytesRead += value.byteLength;
+      if (bytesRead > MAX_RESPONSE_BYTES) {
+        await reader.cancel();
+        return { body: "", tooLarge: true };
+      }
+      body += decoder.decode(value, { stream: true });
+    }
+  } finally {
+    reader.releaseLock();
+  }
 }
 
 /** Makes exactly one bounded OpenRouter call. Retries belong to the durable worker. */
@@ -75,10 +105,19 @@ export async function requestOpenRouterCompletion(
     throw new Error("OpenRouter transport is server-only.");
   }
 
-  const apiKey = (config.apiKey ?? process.env.OPENROUTER_API_KEY)?.trim();
-  if (!apiKey) throw new ProviderTransportError("PROVIDER_UNAVAILABLE", false);
+  const apiKeyCandidate = (config.apiKey ?? process.env.OPENROUTER_API_KEY)?.trim();
+  if (!apiKeyCandidate) throw new ProviderTransportError("PROVIDER_UNAVAILABLE", false);
+  const apiKeyResult = OpenRouterApiKeySchema.safeParse(apiKeyCandidate);
+  if (!apiKeyResult.success) throw new ProviderTransportError("PROVIDER_AUTH", false);
+  const apiKey = apiKeyResult.data;
 
-  const model = config.model ?? process.env.OPENROUTER_MODEL ?? "openai/gpt-4o-mini";
+  const modelResult = OpenRouterModelSchema.safeParse(config.model ?? process.env.OPENROUTER_MODEL ?? "openai/gpt-4o-mini");
+  if (!modelResult.success) throw new ProviderTransportError("PROVIDER_ERROR", false, "Provider model configuration is invalid.");
+  const model = modelResult.data;
+  const siteUrl = OpenRouterSiteUrlSchema.safeParse(process.env.OPENROUTER_SITE_URL ?? "http://localhost:3000");
+  const referrer = siteUrl.success && ["http:", "https:"].includes(new URL(siteUrl.data).protocol)
+    ? siteUrl.data
+    : "http://localhost:3000";
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), PROVIDER_TIMEOUT_MS);
 
@@ -88,16 +127,16 @@ export async function requestOpenRouterCompletion(
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": process.env.OPENROUTER_SITE_URL ?? "http://localhost:3000",
+        "HTTP-Referer": referrer,
         "X-Title": "Project Intaker",
       },
       body: JSON.stringify(buildTriageRequest(intake, model)),
       signal: controller.signal,
     });
 
-    const body = await readBody(response);
+    const read = await readBody(response);
     if (!response.ok) {
-      const diagnostic = safeDiagnostic(getErrorMessage(body), apiKey);
+      const diagnostic = read.tooLarge ? undefined : safeDiagnostic(getErrorMessage(read.body), apiKey);
       if (response.status === 401 || response.status === 403) {
         throw new ProviderTransportError("PROVIDER_AUTH", false, diagnostic);
       }
@@ -109,14 +148,23 @@ export async function requestOpenRouterCompletion(
       }
       throw new ProviderTransportError("PROVIDER_ERROR", false, diagnostic);
     }
+    if (read.tooLarge) {
+      throw new ProviderTransportError("PROVIDER_ERROR", false, "Provider response exceeded the output limit.");
+    }
 
-    let parsed: ChatCompletionResponse;
+    let value: unknown;
     try {
-      parsed = JSON.parse(body) as ChatCompletionResponse;
+      value = JSON.parse(read.body);
     } catch {
       throw new ProviderTransportError("PROVIDER_ERROR", false, "Malformed provider response.");
     }
-    const content = parsed.choices?.[0]?.message?.content;
+
+    const parsed = OpenRouterResponseSchema.safeParse(value);
+    if (!parsed.success) {
+      throw new ProviderTransportError("PROVIDER_ERROR", false, "Provider response did not match the expected response format.");
+    }
+    const completion: OpenRouterResponse = parsed.data;
+    const content = completion.choices?.[0]?.message.content;
     if (typeof content !== "string" || content.length === 0) {
       throw new ProviderTransportError("PROVIDER_ERROR", false, "Provider response omitted message content.");
     }

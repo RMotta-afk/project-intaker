@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { triageFixture } from "../../contracts/fixtures";
 import type { IntakeInput } from "../../contracts/intake";
 import { InvalidTriageOutputError } from "../validated-triage";
 import { generateTriage } from "./generate";
@@ -22,15 +23,15 @@ function providerResponse(content: string) {
 describe("generateTriage adapter", () => {
   it("returns only validated output from the provider content", async () => {
     const fetchImpl = vi.fn(async () => providerResponse(JSON.stringify({
-      summary: "The client wants refreshed customer pages. Integration details need discovery.",
+      ...triageFixture,
       tags: [" Portal ", "Retail", "Discovery"],
-      risks: ["Confirm the required commerce integrations."],
+      risks: [" Confirm which commerce integrations are required. "],
     })));
 
     await expect(generateTriage(intake, { apiKey: "test-key", fetchImpl })).resolves.toEqual({
-      summary: "The client wants refreshed customer pages. Integration details need discovery.",
+      ...triageFixture,
       tags: ["Portal", "Retail", "Discovery"],
-      risks: ["Confirm the required commerce integrations."],
+      risks: ["Confirm which commerce integrations are required."],
     });
     expect(fetchImpl).toHaveBeenCalledTimes(1);
   });

@@ -1,11 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { triageFixture } from "../../contracts/fixtures";
 import { validateTriageQuality } from "./quality";
 
-const valid = {
-  summary: "The client needs a new project portal. Integration requirements need discovery.",
-  tags: ["Portal", "Retail", "Discovery"],
-  risks: ["Confirm the identity provider."],
-};
+const valid = triageFixture;
 
 describe("validateTriageQuality", () => {
   it("returns contract-normalized triage", () => {
@@ -16,6 +13,7 @@ describe("validateTriageQuality", () => {
     })).toEqual({
       ...valid,
       tags: ["Portal", "RETAIL", "Discovery"],
+      risks: ["Confirm the identity provider."],
     });
   });
 
@@ -37,5 +35,11 @@ describe("validateTriageQuality", () => {
     expect(() => validateTriageQuality({ ...valid, risks: ["   "] })).toThrow();
     expect(() => validateTriageQuality({ ...valid, summary: `${"x".repeat(2_001)}. Next.` })).toThrow();
     expect(() => validateTriageQuality({ ...valid, risks: ["x".repeat(501)] })).toThrow();
+  });
+
+  it("requires two distinct complete follow-up questions and the project brief shape", () => {
+    expect(() => validateTriageQuality({ ...valid, followUpQuestions: ["Only one question?"] })).toThrow();
+    expect(() => validateTriageQuality({ ...valid, followUpQuestions: ["Repeat this?", "repeat this?"] })).toThrow();
+    expect(() => validateTriageQuality({ ...valid, projectBrief: { objective: "Goal" } })).toThrow();
   });
 });

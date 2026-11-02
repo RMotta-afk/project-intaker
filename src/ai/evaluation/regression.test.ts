@@ -1,14 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { TriageSchema } from "../../contracts/intake";
+import { triageFixture } from "../../contracts/fixtures";
 import { triageEvaluationCases } from "./cases";
 import { generateTriage } from "../provider/generate";
 import { validateTriageResponse } from "../validated-triage";
 
-const validTriage = {
-  summary: "The intake describes a requested project outcome. Open details need review before scope is confirmed.",
-  tags: ["Project", "Discovery", "Review"],
-  risks: ["Confirm the unresolved details with the requester."],
-};
+const validTriage = triageFixture;
 
 function response(status: number, content: string) {
   return new Response(JSON.stringify({ choices: [{ message: { content } }] }), { status });
@@ -27,8 +24,12 @@ describe("triage evaluation regressions", () => {
     expect(TriageSchema.parse(result)).toEqual(validTriage);
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     const requestBody = JSON.parse(String(fetchImpl.mock.calls[0][1]?.body)) as {
+      max_tokens: number;
       messages: Array<{ content: string }>;
     };
+    expect(requestBody.max_tokens).toBe(1_600);
+    expect(requestBody.messages[0].content).toContain("prioritizing what a team needs to begin");
+    expect(requestBody.messages[0].content).toContain("Do not infer missing facts");
     expect(requestBody.messages[1].content).toContain(JSON.stringify(intake));
   });
 

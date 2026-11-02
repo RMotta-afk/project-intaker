@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { triageFixture } from "../../contracts/fixtures";
 
 const mocks = vi.hoisted(() => ({
   claimNextIntake: vi.fn(),
@@ -28,11 +29,7 @@ const claim = {
   leaseToken: "lease-current",
   leaseExpiresAt: new Date("2026-11-02T12:02:00.000Z"),
 };
-const triage = {
-  summary: "The client needs a refreshed portal. Integration details need discovery.",
-  tags: ["Portal", "Retail", "Redesign"],
-  risks: ["Confirm identity and payment integrations."],
-};
+const triage = triageFixture;
 
 describe("worker single-job runner", () => {
   beforeEach(() => {
