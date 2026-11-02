@@ -19,7 +19,10 @@
     "db:studio": "prisma studio",
     "db:test": "DATABASE_URL=\"file:./test.db\" prisma migrate deploy && RUN_DB_INTEGRATION=1 DATABASE_URL=\"file:./test.db\" vitest run src/server/intakes/api.integration.test.ts && DATABASE_URL=\"file:./test.db\" prisma migrate deploy && RUN_DB_INTEGRATION=1 DATABASE_URL=\"file:./test.db\" vitest run src/server/jobs/claim.test.ts && RUN_DB_INTEGRATION=1 DATABASE_URL=\"file:./test.db\" vitest run src/server/jobs/lifecycle.integration.test.ts && DATABASE_URL=\"file:./test.db\" prisma migrate deploy && RUN_DB_INTEGRATION=1 DATABASE_URL=\"file:./test.db\" vitest run src/server/jobs/worker-process.integration.test.ts",
     "worker": "node --conditions=react-server --import tsx src/server/jobs/worker-entry.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "docker:up": "sh scripts/docker-rebuild.sh",
+    "docker:logs": "docker logs -f project-intaker",
+    "docker:stop": "docker stop project-intaker"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",

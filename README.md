@@ -29,11 +29,11 @@ SQLite uses Prisma. The setup commands above generate the Prisma client and appl
 The image builds the Next.js app and Prisma client. On startup it applies checked-in SQLite migrations, then runs the web server and one triage worker. Both processes use the same database at `/data/intakes.db`; the container stops if either process exits unexpectedly. The image runs as the `node` user.
 
 ```sh
-docker build -t project-intaker .
-docker volume create project-intaker-data
-docker run --rm -p 3000:3000 --mount source=project-intaker-data,target=/data project-intaker
+npm run docker:up
 ```
 
-Open `http://localhost:3000`. Intake creation, list and detail work without a provider key; triage becomes a visible retryable failure. To enable OpenRouter, create a local `.env.container` containing `OPENROUTER_API_KEY=...` and optionally `OPENROUTER_MODEL=...`, then add `--env-file .env.container` to `docker run`. Keep `DATABASE_URL` unset in that file so the image uses its persistent `/data/intakes.db` path. The local `.env` example is for running outside Docker and should not be passed to the container as-is.
+This command builds the image, replaces the existing `project-intaker` container, and reuses the `project-intaker-data` volume. Run it again after code changes. Set `PROJECT_INTAKER_PORT=3001` before the command to use another host port. Use `npm run docker:logs` to follow logs and `npm run docker:stop` to stop the app.
+
+Open `http://localhost:3000`. Intake creation, list and detail work without a provider key; triage becomes a visible retryable failure. To enable OpenRouter, put `OPENROUTER_API_KEY=...` and optionally `OPENROUTER_MODEL=...` in `.env.container` or `.env`, then run `npm run docker:up`. The script prefers `.env.container`, falls back to `.env`, and always sets the container database to its persistent `/data/intakes.db` path.
 
 Stop the container with Ctrl-C or `docker stop`. The named volume preserves requests across container restarts. For a host bind mount, ensure the container's `node` user can write the mounted directory. This is a single-container, single-worker local deployment; do not run multiple replicas against the same SQLite file.
