@@ -40,3 +40,9 @@ Copy [the handoff template](../../templates/HANDOFF.md) here before stopping. In
 - Next handoff: P03 awaits back B03, front F01/F02/F03 and AI A03 feature integration; resume with P03.1 after those handoffs.
 
 Docker build verification was explicitly recorded as unavailable; the task acceptance permits an unrun Docker build when the executable is absent. The Dockerfile defines only a Node base and version-report command.
+
+## Requested container runtime follow-up — 2026-11-02
+
+The user expanded the original base-file scope to a runnable whole-app image. `Dockerfile` now builds Next.js and Prisma in a build stage, retains production Prisma CLI and `tsx` for migrations/worker startup, runs as the `node` user, mounts `/data` for SQLite, and uses `scripts/start-container.mjs` to migrate then supervise the web and worker processes. `.dockerignore` excludes credentials and local databases; `scripts/healthcheck.mjs` probes the database-backed API. The README contains build/run and persistence instructions.
+
+Local equivalent verified: migration with an absolute SQLite path, web and worker startup on port 3010, healthy probe, API create → visible `PROVIDER_UNAVAILABLE` failure, and signal-driven shutdown. `HUSKY=0 npm ci --offline`, Prisma generate, lint, typecheck, 87 unit tests and Next build passed. A second local simulation installed only production dependencies in a temporary directory (67 packages), generated Prisma, applied the migration, started Next.js and the worker, passed the health probe, and saved an intake that reached `FAILED` / `PROVIDER_UNAVAILABLE`. Docker/Podman are not installed here, so image build and container execution remain unrun.
