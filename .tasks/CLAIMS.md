@@ -4,7 +4,9 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | P01 | Codex | DONE | shared workspace | scaffold, scripts, `src/contracts/intake.ts`, fixtures, local setup | v1 in `src/contracts/intake.ts` | Ready for front/back/AI consumers |
 | P02 | Codex | DONE | shared workspace | `.husky`, `.github/workflows/quality.yml`, `Dockerfile`, npm scripts | v1 scripts in package.json | CI local-equivalent verified; Docker unavailable |
-| P03 | Codex | BLOCKED | shared workspace | setup/check documentation only | v1 | B03 and F01/F02/F03 must be implemented/integrated |
+| P03 | Codex | IN_PROGRESS | integration/intake-workflow | page wiring, worker integration, checks, review report | v1 | Browser walkthrough, live provider review, task handoff reconciliation |
+| B01–B03 | Integration review | IN_PROGRESS | integration/intake-workflow | merged backend plus `src/server/jobs/outcome.ts`, `worker-entry.ts` | v1 | Reconcile uncommitted backend handoffs; accept B02/B03 after final review |
+| F01–F03 | Integration review | IN_PROGRESS | integration/intake-workflow | merged components plus app pages/refresh/retry | v1 | Browser, keyboard and responsive walkthrough; reconcile frontend handoffs |
 | A01.1 + A01.2 | Codex / a01_components | DONE | shared workspace; `6cd1dec` | `src/ai/validated-triage/parser.ts`, `quality.ts`, focused tests | v1 in `src/contracts/intake.ts` | A01.3 accepted in `145b7e8` |
 | A02.1 + A02.2 | Codex / a02_transport | DONE | shared workspace; `34d88ee` | `src/ai/provider/request.ts`, `transport.ts`, focused tests | v1 in `src/contracts/intake.ts` | A02.3 accepted in `e3126c1` |
 | A03.1 | Codex / a03_cases | DONE | shared workspace; `70edbd2` | `src/ai/evaluation/cases.ts`, `src/ai/evaluation/review-rubric.md` | v1 in `src/contracts/intake.ts` | A03.2 accepted in `f9f9470` |

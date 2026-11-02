@@ -1,6 +1,6 @@
 # Local implementation order
 
-All features/tasks are pending. Assessment scope remains in [GUIDE.md](../docs/GUIDE.md). This file owns sequence; [the task map](README.md) owns feature links and statuses. No executable commands are assumed before scaffolding.
+P01/P02 and A01–A03 have recorded completion. Backend and frontend code is being integrated on `integration/intake-workflow`; P03 remains open. See the feature map for current integration status. Assessment scope remains in [GUIDE.md](../docs/GUIDE.md). This file owns sequence; [the task map](README.md) owns feature links and statuses. No executable commands are assumed before scaffolding.
 
 1. **Foundation:** P01 establishes runnable scaffold, contracts, configuration and fixtures. P01.1 also unlocks P02; its base Dockerfile needs no services. Select tooling during scaffolding and record decisions in shared setup docs.
 2. **Persistence slice:** B01 and F01/F02/F03 presentation work proceed after contracts. Integrate create/list/detail against persisted SQLite and keep original input visible. Do this before prioritizing optional enhancements.

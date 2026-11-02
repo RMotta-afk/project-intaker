@@ -21,7 +21,7 @@ A wave grants no permission to edit overlapping files. A02 may test transport be
 
 Use [CLAIMS.md](CLAIMS.md) before starting. Foundation owns shared configuration/package edits; contract owner owns the shared boundary; persistence owner serializes migrations. Assign separate feature routes/components and test files. Helpers used by more than one frontend feature need one owner. Reassign an overlapping file or serialize rather than treating separate branches as conflict prevention.
 
-Work in separate worktrees when practical. Local ignored briefs do not travel with Git: copy only the needed context and apply local exclusion in each checkout, keeping one authoritative status board. Do not stage local plans to transfer them.
+Work in separate worktrees when practical. Tracked briefs travel with Git. Merge task updates deliberately, keeping one authoritative integration status board.
 
 Integrate contracts → persistence → generation → recovery → delivery. Every accepted handoff includes actual paths, contract revision, commands/results, unrun checks and the next recipient/step using [the template](templates/HANDOFF.md). Integrator checks the actual feature boundary; fixture-only success does not complete a feature.
 

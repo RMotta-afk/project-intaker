@@ -1,7 +1,7 @@
 # P03.1: Integrate real slices and setup
 
-Status: BLOCKED
-Owner: Unassigned
+Status: IN_PROGRESS
+Owner: Codex
 Parent feature: [feature brief](README.md)
 Depends on: B03 + F01 + F02 + F03 + A02
 Blocks: downstream tasks referencing P03.1; parent feature completion
@@ -31,3 +31,7 @@ Copy [the handoff template](../../templates/HANDOFF.md) here before stopping. In
 ## Current blocker
 
 P03.1 awaits B03, F01, F02, F03 and A02. The local README/setup work needed for the scaffold was completed, but no full API/database/worker workflow exists yet. After dependencies land, run the persistence, generation and retry slices, then update documentation.
+
+## Integration progress — 2026-11-02
+
+Merged committed feature heads on `integration/intake-workflow` and connected page routes, persistence, refresh, retry, worker environment loading and provider failure classification. Local no-key and fake-adapter workflow passed. Browser interaction and live-provider behavior remain unverified. See [integration review](../../INTEGRATION_REVIEW.md).

@@ -1,7 +1,7 @@
 # P03: Verified vertical workflow and reviewer-ready setup
 
-Status: BLOCKED
-Owner: Unassigned
+Status: IN_PROGRESS
+Owner: Codex
 Area: platform
 Depends on: P02 + B03 + F01 + F02 + F03 + A03
 Scope: Required workflow and/or confirmed candidate decisions; P02 includes explicitly requested delivery tooling.
@@ -34,4 +34,4 @@ Use [HANDOFF.md](../../templates/HANDOFF.md), including feature-level evidence a
 
 ## Current blocker
 
-The repository has only the foundation scaffold; the back, front, and AI feature dependencies named above have not been implemented. P03 end-to-end work cannot be completed until those features hand off. Platform foundation checks are complete and recorded in the child handoffs.
+A local integration branch now connects the committed backend, AI and frontend code. The API/SQLite/worker path passed a no-key failure and fake-adapter retry-to-completion check. Browser interaction/accessibility review, live-provider quality review and feature handoff reconciliation remain before P03 acceptance.
