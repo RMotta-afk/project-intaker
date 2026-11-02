@@ -24,9 +24,9 @@ No agents are launched by this documentation. Agent assignment requires the user
 | [F01: Accessible intake form that saves before generation](front/f01-new-intake/README.md) | front | P01; B01.2 for integration | TODO |
 | [F02: Scannable saved request list and navigation](front/f02-intake-queue/README.md) | front | P01; B01.3 for integration | TODO |
 | [F03: Original request, generated triage and recovery in one detail view](front/f03-intake-detail/README.md) | front | P01; B01.3 for reads; B03.2 for retry | TODO |
-| [A01: Untrusted model response becomes validated advisory triage](ai-engineering/a01-validated-triage/README.md) | ai-engineering | P01 | TODO |
-| [A02: Bounded server-only provider generation](ai-engineering/a02-provider-generation/README.md) | ai-engineering | P01; A01 for complete adapter | TODO |
-| [A03: Small reproducible triage quality review](ai-engineering/a03-evaluation/README.md) | ai-engineering | A01; A02 for adapter checks | TODO |
+| [A01: Untrusted model response becomes validated advisory triage](ai-engineering/a01-validated-triage/README.md) | ai-engineering | P01 | DONE |
+| [A02: Bounded server-only provider generation](ai-engineering/a02-provider-generation/README.md) | ai-engineering | P01; A01 for complete adapter | DONE |
+| [A03: Small reproducible triage quality review](ai-engineering/a03-evaluation/README.md) | ai-engineering | A01; A02 for adapter checks | DONE |
 | [P03: Verified vertical workflow and reviewer-ready setup](platform/p03-delivery-verification/README.md) | platform | P02 + B03 + F01 + F02 + F03 + A03 | TODO |
 
 ## Status and handoff rules

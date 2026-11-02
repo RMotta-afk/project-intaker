@@ -1,7 +1,7 @@
 # A03.2: Add deterministic regression coverage
 
-Status: TODO
-Owner: Unassigned
+Status: DONE
+Owner: Codex
 Parent feature: [feature brief](README.md)
 Depends on: A03.1 + A02
 Blocks: downstream tasks referencing A03.2; parent feature completion
@@ -14,9 +14,9 @@ Owns: Evaluation tests and simulated provider-response fixtures.
 
 ## Small implementation steps
 
-- [ ] Exercise cases using mocked responses/errors; include wrong tag count, malformed output, empty output, rate limit and auth failure. Do not claim mocks measure live quality.
-- [ ] Keep edits within claimed ownership; request shared-file changes from their owner.
-- [ ] Verify the acceptance below and record exact evidence.
+- [x] Exercise cases using mocked responses/errors; include wrong tag count, malformed output, empty output, rate limit and auth failure. Do not claim mocks measure live quality.
+- [x] Keep edits within claimed ownership; request shared-file changes from their owner.
+- [x] Verify the acceptance below and record exact evidence.
 
 ## Acceptance and verification
 
@@ -26,4 +26,8 @@ A task is DONE only after its dependency outputs are integrated, its required ch
 
 ## Handoff
 
-Copy [the handoff template](../../templates/HANDOFF.md) here before stopping. Include changed paths/branch, commands and results, contract version, unresolved risks, next task and exact resumption step. Keep status TODO until claimed; do not imply work or checks have run.
+- Branch: `feature/ai-engineering`; commit `f9f9470`.
+- Contract: v1 in `src/contracts/intake.ts`.
+- Verification: `npm test -- --run src/ai/evaluation/regression.test.ts` — 10/10 passed`.
+- Next: A03.3 review record (accepted in `b16f173`).
+- Changed: `regression.test.ts`; offline mocks cover typed cases, wrong tag count, malformed/empty output, rate limit and auth failure. Mocks do not measure live quality.

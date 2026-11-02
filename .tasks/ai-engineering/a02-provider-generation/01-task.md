@@ -1,7 +1,7 @@
 # A02.1: Create prompt and request builder
 
-Status: TODO
-Owner: Unassigned
+Status: DONE
+Owner: Codex
 Parent feature: [feature brief](README.md)
 Depends on: P01
 Blocks: downstream tasks referencing A02.1; parent feature completion
@@ -14,9 +14,9 @@ Owns: Versioned prompt and request serialization.
 
 ## Small implementation steps
 
-- [ ] Separate application instructions from serialized untrusted intake. Ask for required summary/tags/checklist, actionable uncertainties and no invented facts. Define finite output budget.
-- [ ] Keep edits within claimed ownership; request shared-file changes from their owner.
-- [ ] Verify the acceptance below and record exact evidence.
+- [x] Separate application instructions from serialized untrusted intake. Ask for required summary/tags/checklist, actionable uncertainties and no invented facts. Define finite output budget.
+- [x] Keep edits within claimed ownership; request shared-file changes from their owner.
+- [x] Verify the acceptance below and record exact evidence.
 
 ## Acceptance and verification
 
@@ -26,4 +26,8 @@ A task is DONE only after its dependency outputs are integrated, its required ch
 
 ## Handoff
 
-Copy [the handoff template](../../templates/HANDOFF.md) here before stopping. Include changed paths/branch, commands and results, contract version, unresolved risks, next task and exact resumption step. Keep status TODO until claimed; do not imply work or checks have run.
+- Branch: `feature/ai-engineering`; commit `34d88ee`.
+- Contract: v1 in `src/contracts/intake.ts`.
+- Verification: `npm test -- --run src/ai/provider` — prompt and transport unit tests passed`.
+- Next: A02.3 adapter (accepted in `e3126c1`).
+- Changed: `request.ts`, `request.test.ts`; `triage-v1` separates system directions and serialized untrusted intake, with a 700-token output bound.
