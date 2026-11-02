@@ -6,7 +6,7 @@ A project-intake tool for reviewing inbound requests with AI-generated summaries
 
 - Requires Node.js 22 or later and npm.
 - Run `npm ci` to install the locked dependencies and configure the Husky hook.
-- Copy `.env.example` to `.env` when backend/provider settings are introduced. No credentials are needed to run the scaffold.
+- Copy `.env.example` to `.env` for local provider generation. Set `OPENROUTER_API_KEY` on the server; `OPENROUTER_MODEL` is optional and defaults to `openai/gpt-4o-mini`. No credentials are needed to run the scaffold.
 - Run `npm run dev` to start the web app at `http://localhost:3000`.
 
 ## Checks
