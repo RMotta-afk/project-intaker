@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Intake {
+  id               String   @id @default(cuid())
+  title            String
+  description      String
+  budget           String
+  timeline         String
+  industry         String
+  status           String   @default("PENDING")
+  triageJson       String?
+  errorCode        String?
+  attempt          Int      @default(0)
+  maxAttempts      Int      @default(3)
+  availableAt      DateTime @default(now())
+  leaseToken       String?
+  leaseExpiresAt   DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([status, availableAt, createdAt])
+  @@index([status, leaseExpiresAt])
+}

@@ -2,7 +2,9 @@
   "name": "project-intaker",
   "version": "0.1.0",
   "private": true,
-  "engines": { "node": ">=20.9.0" },
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -11,12 +13,20 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:studio": "prisma studio",
+    "db:test": "DATABASE_URL=\"file:./test.db\" prisma migrate deploy && RUN_DB_INTEGRATION=1 DATABASE_URL=\"file:./test.db\" vitest run src/server/intakes/api.integration.test.ts && DATABASE_URL=\"file:./test.db\" prisma migrate deploy && RUN_DB_INTEGRATION=1 DATABASE_URL=\"file:./test.db\" vitest run src/server/jobs/claim.test.ts && RUN_DB_INTEGRATION=1 DATABASE_URL=\"file:./test.db\" vitest run src/server/jobs/lifecycle.integration.test.ts && DATABASE_URL=\"file:./test.db\" prisma migrate deploy && RUN_DB_INTEGRATION=1 DATABASE_URL=\"file:./test.db\" vitest run src/server/jobs/worker-process.integration.test.ts",
+    "worker": "node --conditions=react-server --import tsx src/server/jobs/worker-entry.ts",
     "prepare": "husky"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.0",
     "next": "16.4.3",
     "react": "19.3.1",
     "react-dom": "19.3.1",
+    "server-only": "^0.0.1",
     "zod": "4.6.7"
   },
   "devDependencies": {
@@ -27,10 +37,14 @@
     "eslint-config-next": "16.4.3",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
+    "prisma": "^6.19.0",
+    "tsx": "^4.23.15",
     "typescript": "^5.0.0",
     "vitest": "^5.0.5"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,mjs,cjs}": ["eslint --fix"]
+    "*.{js,jsx,ts,tsx,mjs,cjs}": [
+      "eslint --fix"
+    ]
   }
 }

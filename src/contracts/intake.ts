@@ -31,6 +31,7 @@ export const PublicIntakeSchema = IntakeInputSchema.extend({
   status: IntakeStatusSchema,
   triage: TriageSchema.optional(),
   errorCode: z.string().min(1).optional(),
+  retryAvailable: z.boolean(),
 });
 
 export const TriageFailureCodeSchema = z.enum([
