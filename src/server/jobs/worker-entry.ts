@@ -3,7 +3,7 @@ import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
 import { runWorker, type TriageGenerator } from "./worker";
 import { disconnectDb } from "../db";
-import type { IntakeInput } from "../../contracts/intake";
+import type { TriageInput } from "../../contracts/intake";
 
 function readMilliseconds(name: string, fallback: number, minimum: number, maximum: number): number {
   const configured = process.env[name];
@@ -31,7 +31,7 @@ async function loadAdapter(): Promise<TriageGenerator> {
   if (typeof adapter !== "function") {
     throw new Error("Worker adapter generateTriage export must be a function.");
   }
-  return async (intake: IntakeInput) => {
+  return async (intake: TriageInput) => {
     const result: unknown = await adapter(intake);
     return result;
   };

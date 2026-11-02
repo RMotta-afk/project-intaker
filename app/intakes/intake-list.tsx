@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
-import type { PublicIntake } from "@/contracts/intake";
+import { useMemo, useState } from "react";
+import type { PublicIntake, IntakeListItem } from "@/contracts/intake";
 import styles from "./intake-list.module.css";
 
 const statusLabels: Record<PublicIntake["status"], string> = {
@@ -23,11 +26,27 @@ export function IntakeList({
   error,
   onRetry,
 }: {
-  intakes: Pick<PublicIntake, "id" | "title" | "industry" | "createdAt" | "status">[];
+  intakes: IntakeListItem[];
   loading?: boolean;
   error?: string;
   onRetry?: () => void;
 }) {
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("");
+  const categories = useMemo(() => {
+    const values = new Map<string, string>();
+    for (const intake of intakes) for (const tag of [...intake.industry.split(","), ...(intake.tags ?? [])]) {
+      const label = tag.trim();
+      if (label && !values.has(label.toLocaleLowerCase())) values.set(label.toLocaleLowerCase(), label);
+    }
+    return [...values.values()].sort((a, b) => a.localeCompare(b));
+  }, [intakes]);
+  const visible = useMemo(() => intakes.filter((intake) => {
+    const tags = [...intake.industry.split(","), ...(intake.tags ?? [])].map((tag) => tag.trim());
+    const term = query.trim().toLocaleLowerCase();
+    return (!term || [intake.title, ...tags].some((value) => value.toLocaleLowerCase().includes(term)))
+      && (!category || tags.some((tag) => tag.toLocaleLowerCase() === category.toLocaleLowerCase()));
+  }), [intakes, query, category]);
   return (
     <section className={styles.section} aria-labelledby="requests-heading">
       <div className={styles.headingRow}>
@@ -38,6 +57,14 @@ export function IntakeList({
         </div>
         <Link className={styles.createLink} href="/new">＋ New request</Link>
       </div>
+
+      {intakes.length > 0 && <div className={styles.filters}>
+        <label>Search projects<input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Name or category" /></label>
+        <label>Category<select value={category} onChange={(event) => setCategory(event.target.value)}>
+          <option value="">All categories</option>
+          {categories.map((item) => <option key={item} value={item}>{item}</option>)}
+        </select></label>
+      </div>}
 
       {error ? (
         <div className={styles.message} role="alert">
@@ -54,9 +81,11 @@ export function IntakeList({
           <p>When a project comes in, it will appear here with its triage status.</p>
           <Link href="/new">Create the first request</Link>
         </div>
+      ) : visible.length === 0 ? (
+        <p className={styles.message}>No projects match your search.</p>
       ) : (
         <ul className={styles.list}>
-          {intakes.map((intake) => (
+          {visible.map((intake) => (
             <li className={styles.card} key={intake.id}>
               <Link className={styles.cardLink} href={`/intakes/${encodeURIComponent(intake.id)}`}>
                 <span className={styles.cardMain}>

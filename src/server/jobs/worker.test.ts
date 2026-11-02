@@ -23,6 +23,7 @@ const claim = {
   budget: "$20,000",
   timeline: "Q1",
   industry: "Software",
+  clarificationAnswers: [{ question: "Which workflow is first?", answer: "Order history." }],
   attempt: 1,
   maxAttempts: 3,
   createdAt: new Date("2026-11-02T12:00:00.000Z"),
@@ -54,6 +55,7 @@ describe("worker single-job runner", () => {
       budget: claim.budget,
       timeline: claim.timeline,
       industry: claim.industry,
+      clarificationAnswers: claim.clarificationAnswers,
     });
     expect(mocks.completeClaim).toHaveBeenCalledWith("intake-1", "lease-current", triage, { now: undefined });
   });

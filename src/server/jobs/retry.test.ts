@@ -52,14 +52,17 @@ describe("retryIntake", () => {
     expect(dbMocks.create).not.toHaveBeenCalled();
   });
 
-  it("rejects missing, active, and completed intakes", async () => {
+  it("rejects missing and active intakes, and requeues completed intakes", async () => {
     dbMocks.findUnique.mockResolvedValueOnce(null).mockResolvedValueOnce({ id: "active", status: "PROCESSING", maxAttempts: 3 })
-      .mockResolvedValueOnce({ id: "done", status: "COMPLETED", maxAttempts: 3 });
+      .mockResolvedValueOnce({ id: "done", status: "COMPLETED", maxAttempts: 3, triageJson: "old-triage" });
 
     await expect(retryIntake("missing")).resolves.toEqual({ kind: "not-found" });
     await expect(retryIntake("active")).resolves.toEqual({ kind: "conflict" });
-    await expect(retryIntake("done")).resolves.toEqual({ kind: "conflict" });
-    expect(dbMocks.updateMany).not.toHaveBeenCalled();
+    await expect(retryIntake("done")).resolves.toMatchObject({ kind: "retried", intakeId: "done" });
+    expect(dbMocks.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: "done", status: "COMPLETED" },
+      data: expect.objectContaining({ status: "PENDING", triageJson: null, previousTriageJson: "old-triage" }),
+    }));
   });
 
   it("allows only one concurrent retry transition and creates no duplicate intake", async () => {

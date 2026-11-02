@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { getDb } from "../db";
+import { ClarificationAnswersSchema, type ClarificationAnswer } from "../../contracts/intake";
 
 export const DEFAULT_LEASE_MS = 120_000;
 const MAX_CAS_RETRIES = 8;
@@ -11,6 +12,7 @@ export type ClaimedIntake = {
   budget: string;
   timeline: string;
   industry: string;
+  clarificationAnswers: ClarificationAnswer[];
   attempt: number;
   maxAttempts: number;
   createdAt: Date;
@@ -117,6 +119,10 @@ export async function claimNextIntake(options: ClaimOptions = {}): Promise<Claim
       budget: candidate.budget,
       timeline: candidate.timeline,
       industry: candidate.industry,
+      clarificationAnswers: (() => { try {
+        const parsed = ClarificationAnswersSchema.safeParse(JSON.parse(candidate.clarificationAnswersJson ?? "[]"));
+        return parsed.success ? parsed.data : [];
+      } catch { return []; } })(),
       attempt: candidate.attempt + 1,
       maxAttempts: candidate.maxAttempts,
       createdAt: candidate.createdAt,

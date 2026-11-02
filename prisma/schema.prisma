@@ -16,6 +16,8 @@ model Intake {
   industry         String
   status           String   @default("PENDING")
   triageJson       String?
+  previousTriageJson String?
+  clarificationAnswersJson String?
   errorCode        String?
   attempt          Int      @default(0)
   maxAttempts      Int      @default(3)

@@ -28,6 +28,7 @@ integration("SQLite retry through the worker", () => {
   let createRoute: typeof import("../../../app/api/intakes/route");
   let detailRoute: typeof import("../../../app/api/intakes/[id]/route");
   let retryRoute: typeof import("../../../app/api/intakes/[id]/retry/route");
+  let answerRoute: typeof import("../../../app/api/intakes/[id]/answers/route");
   let worker: typeof import("./worker");
   let outcome: typeof import("./outcome");
   let db: typeof import("../db");
@@ -37,6 +38,7 @@ integration("SQLite retry through the worker", () => {
     createRoute = await import("../../../app/api/intakes/route");
     detailRoute = await import("../../../app/api/intakes/[id]/route");
     retryRoute = await import("../../../app/api/intakes/[id]/retry/route");
+    answerRoute = await import("../../../app/api/intakes/[id]/answers/route");
     worker = await import("./worker");
     outcome = await import("./outcome");
     db = await import("../db");
@@ -86,6 +88,28 @@ integration("SQLite retry through the worker", () => {
     expect(count).toBe(1);
     expect(finalRecord).toMatchObject({ ...storedSource, id, status: "COMPLETED", attempt: 1, triageJson: expect.any(String) });
     expect(JSON.parse(finalRecord?.triageJson ?? "null")).toEqual(triage);
+
+    const titleEdit = await detailRoute.PUT(new Request(`http://localhost/api/intakes/${id}`, {
+      method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ title: "Revised title" }),
+    }), { params: Promise.resolve({ id }) });
+    expect(titleEdit.status).toBe(200);
+    expect(await titleEdit.json()).toMatchObject({ retriaged: false, intake: { title: "Revised title", status: "COMPLETED" } });
+
+    const answer = { question: triage.followUpQuestions[0], answer: "Order history is the first priority." };
+    const answered = await answerRoute.POST(new Request(`http://localhost/api/intakes/${id}/answers`, {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ answers: [answer] }),
+    }), { params: Promise.resolve({ id }) });
+    expect(answered.status).toBe(202);
+    expect(await answered.json()).toMatchObject({ intake: { status: "PENDING", previousTriage: triage } });
+
+    const revisedTriage = { ...triage, summary: "Order history is the first priority for the portal. The delivery details still need confirmation." };
+    await expect(worker.runWorkerOnce(async (input) => {
+      expect(input.clarificationAnswers).toEqual([answer]);
+      return revisedTriage;
+    }, { now: () => new Date(start.getTime() + 2_000), createToken: () => "answered-attempt-token" }))
+      .resolves.toEqual({ kind: "completed", intakeId: id });
+    const revisedDetail = await detailRoute.GET(new Request(`http://localhost/api/intakes/${id}`), { params: Promise.resolve({ id }) });
+    expect(await revisedDetail.json()).toMatchObject({ triage: revisedTriage, previousTriage: triage, clarificationAnswers: [answer] });
   });
 
   afterAll(async () => {

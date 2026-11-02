@@ -7,7 +7,7 @@ export type CreateIntakeResult =
   | { kind: "invalid" }
   | { kind: "storage-error" };
 
-function formatCalendarDate(value: string): string {
+export function formatCalendarDate(value: string): string {
   return new Date(`${value}T00:00:00.000Z`).toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
@@ -16,7 +16,7 @@ function formatCalendarDate(value: string): string {
   });
 }
 
-function formatBudgetAmount(value: string, currency: string): string {
+export function formatBudgetAmount(value: string, currency: string): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,

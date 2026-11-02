@@ -37,7 +37,7 @@ describe("validateTriageQuality", () => {
     expect(() => validateTriageQuality({ ...valid, risks: ["x".repeat(501)] })).toThrow();
   });
 
-  it("requires two distinct complete follow-up questions and the project brief shape", () => {
+  it("requires two distinct complete follow-up questions and rejects extra fields", () => {
     expect(() => validateTriageQuality({ ...valid, followUpQuestions: ["Only one question?"] })).toThrow();
     expect(() => validateTriageQuality({ ...valid, followUpQuestions: ["Repeat this?", "repeat this?"] })).toThrow();
     expect(() => validateTriageQuality({ ...valid, projectBrief: { objective: "Goal" } })).toThrow();

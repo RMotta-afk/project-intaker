@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { IntakeInput } from "../../contracts/intake";
+import type { TriageInput } from "../../contracts/intake";
 import { claimNextIntake } from "./claim";
 import { completeClaim, failClaim, type FailureResult } from "./outcome";
 
@@ -11,7 +11,7 @@ export type WorkerRunResult =
   | { kind: "stale-token"; intakeId: string }
   | { kind: "storage-error"; intakeId: string };
 
-export type TriageGenerator = (intake: IntakeInput) => Promise<unknown>;
+export type TriageGenerator = (intake: TriageInput) => Promise<unknown>;
 
 export interface WorkerOptions {
   pollIntervalMs?: number;
@@ -36,12 +36,13 @@ export async function runWorkerOnce(
   });
   if (!claim) return { kind: "idle" };
 
-  const input: IntakeInput = {
+  const input: TriageInput = {
     title: claim.title,
     description: claim.description,
     budget: claim.budget,
     timeline: claim.timeline,
     industry: claim.industry,
+    clarificationAnswers: claim.clarificationAnswers,
   };
 
   let output: unknown;

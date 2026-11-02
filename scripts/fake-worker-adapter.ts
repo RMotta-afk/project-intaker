@@ -16,9 +16,5 @@ export const generateTriage: GenerateTriage = async (intake) => {
   return {
     ...triageFixture,
     summary: `${intake.title} describes a project request. Further discovery is needed to confirm delivery details.`,
-    projectBrief: {
-      ...triageFixture.projectBrief,
-      objective: `Deliver the project described in “${intake.title}”.`,
-    },
   };
 };

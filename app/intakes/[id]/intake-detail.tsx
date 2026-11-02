@@ -35,6 +35,7 @@ function renderBriefList(items: string[]) {
 }
 
 export function IntakeDetail({ intake }: { intake: PublicIntake }) {
+  const displayedTriage = intake.triage ?? intake.previousTriage;
   const failureMessage = intake.errorCode
     ? failureMessages[intake.errorCode] ?? "Triage could not be completed. Your request is safe."
     : "Triage could not be completed. Your request is safe.";
@@ -94,61 +95,44 @@ export function IntakeDetail({ intake }: { intake: PublicIntake }) {
           </div>
           <span className={styles.advisory}>Advisory only</span>
         </div>
-        {intake.triage ? (
+        {displayedTriage ? (
           <div className={styles.result}>
+            {!intake.triage && <p className={styles.previousLabel}>{intake.status === "FAILED" ? "Previous result · the latest triage failed" : "Previous result · a new triage is in progress"}</p>}
             <div className={styles.summaryBlock}>
               <h3>Summary</h3>
-              <p>{intake.triage.summary}</p>
+              <p>{displayedTriage.summary}</p>
             </div>
-            <section className={styles.briefBlock} aria-labelledby="project-brief-heading">
-              <h3 id="project-brief-heading">Project kickoff brief</h3>
-              <dl className={styles.briefGrid}>
-                <div>
-                  <dt>Objective</dt>
-                  <dd>{intake.triage.projectBrief.objective ?? "Not stated in the request."}</dd>
-                </div>
-                <div>
-                  <dt>Primary users</dt>
-                  <dd>{intake.triage.projectBrief.primaryUsers ?? "Not stated in the request."}</dd>
-                </div>
-                <div>
-                  <dt>Key requirements</dt>
-                  <dd>{renderBriefList(intake.triage.projectBrief.keyRequirements)}</dd>
-                </div>
-                <div>
-                  <dt>Constraints and dependencies</dt>
-                  <dd>{renderBriefList(intake.triage.projectBrief.constraints)}</dd>
-                </div>
-                <div className={styles.briefWide}>
-                  <dt>Success criteria</dt>
-                  <dd>{renderBriefList(intake.triage.projectBrief.successCriteria)}</dd>
-                </div>
-              </dl>
-            </section>
             <section className={styles.followUp} aria-labelledby="follow-up-heading">
               <h3 id="follow-up-heading">Questions to clarify with the requester</h3>
               <ol className={styles.questions}>
-                {intake.triage.followUpQuestions.map((question) => <li key={question}>{question}</li>)}
+                {displayedTriage.followUpQuestions.map((question) => <li key={question}>{question}</li>)}
               </ol>
             </section>
             <div className={styles.resultColumns}>
               <div>
                 <h3>Suggested tags</h3>
                 <ul className={styles.tags}>
-                  {intake.triage.tags.map((tag) => <li key={tag}>{tag}</li>)}
+                  {displayedTriage.tags.map((tag) => <li key={tag}>{tag}</li>)}
                 </ul>
               </div>
               <div>
                 <h3>Risks to explore</h3>
                 <ul className={styles.risks}>
-                  {intake.triage.risks.map((risk) => <li key={risk}>{risk}</li>)}
+                  {displayedTriage.risks.map((risk) => <li key={risk}>{risk}</li>)}
                 </ul>
               </div>
             </div>
+            {intake.triage && intake.previousTriage && <details className={styles.previousResult}>
+              <summary>Compare with previous triage</summary>
+              <h3>Previous summary</h3><p>{intake.previousTriage.summary}</p>
+              <h3>Previous tags</h3><p>{intake.previousTriage.tags.join(", ")}</p>
+              <h3>Previous risks</h3>{renderBriefList(intake.previousTriage.risks)}
+              <h3>Previous questions</h3>{renderBriefList(intake.previousTriage.followUpQuestions)}
+            </details>}
           </div>
         ) : (
           <p className={styles.triagePending}>
-            {intake.status === "FAILED" ? "A triage result is not available yet." : "A project brief, follow-up questions, suggested tags, and risks will appear here when triage is complete."}
+            {intake.status === "FAILED" ? "A triage result is not available yet." : "A summary, follow-up questions, suggested tags, and risks will appear here when triage is complete."}
           </p>
         )}
       </section>

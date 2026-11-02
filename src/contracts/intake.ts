@@ -58,6 +58,17 @@ export const IntakeSubmissionSchema = z.object({
   }),
 }).strict();
 
+export const IntakeUpdateSchema = IntakeSubmissionSchema.partial().strict()
+  .refine((value) => Object.keys(value).length > 0, "Change at least one project field.");
+
+export const ClarificationAnswerSchema = z.object({
+  question: z.string().trim().min(1).max(300),
+  answer: z.string().trim().min(1).max(2_000),
+}).strict();
+export const ClarificationAnswersSchema = z.array(ClarificationAnswerSchema).max(40);
+export const AnswerSubmissionSchema = z.object({ answers: z.array(ClarificationAnswerSchema).min(1).max(4) }).strict()
+  .refine(({ answers }) => new Set(answers.map(({ question }) => question)).size === answers.length, "Answer each question once.");
+
 export const IntakeStatusSchema = z.enum(["PENDING", "PROCESSING", "COMPLETED", "FAILED"]);
 export const TriageFailureCodeSchema = z.enum([
   "PROVIDER_UNAVAILABLE",
@@ -75,7 +86,7 @@ const TriageCoreSchema = z.object({
   risks: z.array(z.string().trim().min(1).max(500)).min(1).max(8),
 }).strict();
 
-const ProjectBriefSchema = z.object({
+export const HistoricalProjectBriefSchema = z.object({
   objective: z.string().trim().min(1).max(600).nullable(),
   primaryUsers: z.string().trim().min(1).max(400).nullable(),
   keyRequirements: z.array(z.string().trim().min(1).max(400)).max(8),
@@ -110,9 +121,27 @@ export const LegacyTriageSchema = TriageCoreSchema
     path: ["summary"],
   });
 
-export const TriageSchema = TriageCoreSchema.extend({
-  projectBrief: ProjectBriefSchema,
+export const SummaryPartSchema = z.object({ summary: TriageCoreSchema.shape.summary }).strict()
+  .refine(({ summary }) => hasTwoToThreeSentences(summary), {
+    message: "Summary must contain 2–3 sentences.", path: ["summary"],
+  });
+export const TagsPartSchema = z.object({ tags: TriageCoreSchema.shape.tags }).strict()
+  .refine(({ tags }) => hasDistinctTags(tags), {
+    message: "Tags must be distinct.", path: ["tags"],
+  });
+export const RisksPartSchema = z.object({
+  risks: TriageCoreSchema.shape.risks,
   followUpQuestions: z.array(FollowUpQuestionSchema).min(2).max(4),
+}).strict()
+  .refine(({ followUpQuestions }) => hasDistinctText(followUpQuestions), {
+    message: "Follow-up questions must be distinct.", path: ["followUpQuestions"],
+  })
+  .refine(({ risks }) => hasDistinctText(risks), {
+    message: "Risk items must be distinct.", path: ["risks"],
+  });
+
+export const TriageSchema = TriageCoreSchema.extend({
+  followUpQuestions: RisksPartSchema.shape.followUpQuestions,
 }).strict()
   .refine(({ tags }) => hasDistinctTags(tags), {
     message: "Tags must be distinct.",
@@ -136,10 +165,12 @@ export const PublicIntakeSchema = IntakeInputSchema.extend({
   createdAt: z.string().datetime(),
   status: IntakeStatusSchema,
   triage: TriageSchema.optional(),
+  previousTriage: TriageSchema.optional(),
+  clarificationAnswers: ClarificationAnswersSchema.optional(),
   errorCode: TriageFailureCodeSchema.optional(),
   retryAvailable: z.boolean(),
 }).strict().superRefine((intake, context) => {
-  if (intake.retryAvailable !== (intake.status === "FAILED")) {
+  if (intake.retryAvailable !== (intake.status === "FAILED" || intake.status === "COMPLETED")) {
     context.addIssue({ code: "custom", path: ["retryAvailable"], message: "Retry availability must match the intake status." });
   }
   if (intake.triage && intake.status !== "COMPLETED") {
@@ -154,11 +185,8 @@ export const IntakeListItemSchema = z.object({
   createdAt: z.string().datetime(),
   status: IntakeStatusSchema,
   errorCode: TriageFailureCodeSchema.optional(),
-}).strict().superRefine((intake, context) => {
-  if (intake.errorCode && intake.status !== "FAILED") {
-    context.addIssue({ code: "custom", path: ["errorCode"], message: "Only failed intakes can expose an error code." });
-  }
-});
+  tags: z.array(z.string().trim().min(1).max(48)).max(3).optional(),
+}).strict();
 
 export const IntakeListResponseSchema = z.object({ intakes: z.array(IntakeListItemSchema) }).strict();
 export const IndustrySuggestionsSchema = z.object({ tags: z.array(z.string().trim().min(1).max(60)).max(2_000) }).strict()
@@ -173,10 +201,16 @@ export const RetryIntakeResponseSchema = z.object({
 
 export type IntakeInput = z.infer<typeof IntakeInputSchema>;
 export type IntakeSubmission = z.infer<typeof IntakeSubmissionSchema>;
+export type IntakeUpdate = z.infer<typeof IntakeUpdateSchema>;
+export type ClarificationAnswer = z.infer<typeof ClarificationAnswerSchema>;
+export type TriageInput = IntakeInput & { clarificationAnswers?: ClarificationAnswer[] };
 export type IntakeListItem = z.infer<typeof IntakeListItemSchema>;
 export type IntakeStatus = z.infer<typeof IntakeStatusSchema>;
 export type Triage = z.infer<typeof TriageSchema>;
+export type SummaryPart = z.infer<typeof SummaryPartSchema>;
+export type TagsPart = z.infer<typeof TagsPartSchema>;
+export type RisksPart = z.infer<typeof RisksPartSchema>;
 export type PublicIntake = z.infer<typeof PublicIntakeSchema>;
 export type TriageFailureCode = z.infer<typeof TriageFailureCodeSchema>;
 
-export type GenerateTriage = (intake: IntakeInput) => Promise<Triage>;
+export type GenerateTriage = (intake: TriageInput) => Promise<Triage>;

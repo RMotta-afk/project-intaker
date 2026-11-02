@@ -1,6 +1,19 @@
 .page { display: grid; gap: 1.25rem; }
 .livePage { display: grid; gap: 1rem; }
-.retryRow { display: flex; justify-content: flex-end; }
+.editPanel, .answerPanel { background: #fff; border: 1px solid #d7e5dc; border-radius: 14px; display: grid; gap: 1rem; padding: 1.25rem; }
+.editPanel h2, .answerPanel h2 { font-size: 1.2rem; margin: 0; }
+.editPanel p, .answerPanel p { color: #5e6d67; line-height: 1.5; margin: 0; }
+.editPanel label, .answerPanel label { color: #34463c; display: grid; font-size: .85rem; font-weight: 700; gap: .4rem; }
+.editPanel input, .editPanel textarea, .editPanel select, .answerPanel textarea { background: #fff; border: 1px solid #b8c9bf; border-radius: 8px; color: #17211d; font: inherit; padding: .7rem .8rem; width: 100%; }
+.editGrid { display: grid; gap: .8rem; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); }
+.editActions { display: flex; gap: .65rem; justify-content: flex-end; }
+.editActions button, .answerPanel button, .editToggle { background: #146b4b; border: 0; border-radius: 8px; color: #fff; cursor: pointer; font: inherit; font-weight: 700; padding: .65rem .9rem; }
+.editActions button:first-child { background: #edf5ef; color: #24553b; }
+.editActions button:disabled, .answerPanel button:disabled { cursor: wait; opacity: .7; }
+.editError { color: #963e33 !important; }
+.answerPanel textarea { min-height: 5rem; resize: vertical; }
+.answerPanel button { justify-self: end; }
+.retryRow { display: flex; gap: .65rem; justify-content: flex-end; }
 .retryButton { align-items: center; background: #146b4b; border: 0; border-radius: 8px; color: #fff; cursor: pointer; display: inline-flex; font: inherit; font-size: .84rem; font-weight: 700; gap: .45rem; min-height: 2.3rem; padding: .5rem .75rem; }
 .retryButton:hover:not(:disabled) { background: #0f553b; }
 .retryButton:focus-visible { outline: 3px solid #78b59c; outline-offset: 3px; }
@@ -41,16 +54,15 @@
 .triage { background: #fdfefd; border-color: #d7e5dc; }
 .advisory { background: #edf5ef; border-color: #c9ddcf; color: #2b6346; }
 .result { margin-top: 1.5rem; }
+.previousLabel { background: #fff7e9; border: 1px solid #ead6aa; border-radius: 8px; color: #75501c; font-size: .84rem; font-weight: 700; padding: .7rem .9rem; }
+.previousResult { background: #f8faf8; border: 1px solid #dce8e0; border-radius: 10px; line-height: 1.6; margin-top: 1.5rem; padding: 1rem; }
+.previousResult summary { color: #146b4b; cursor: pointer; font-weight: 750; }
+.previousResult h3 { margin: 1rem 0 .35rem; }
+.previousResult p { margin: .25rem 0; }
 .result h3 { color: #34463c; font-size: .84rem; margin: 0 0 .65rem; }
 .summaryBlock { border-bottom: 1px solid #e3eae5; padding-bottom: 1.25rem; }
 .summaryBlock p { color: #202c26; line-height: 1.7; margin: 0; max-width: 75ch; }
-.briefBlock { background: #f7faf8; border: 1px solid #dce8e0; border-radius: 11px; margin-top: 1.25rem; padding: 1.1rem; }
-.briefBlock h3, .followUp h3 { color: #34463c; font-size: .9rem; margin: 0 0 .9rem; }
-.briefGrid { display: grid; gap: 1rem 1.4rem; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; }
-.briefGrid > div { min-width: 0; }
-.briefGrid dt { color: #64716b; font-size: .76rem; font-weight: 750; margin: 0 0 .4rem; }
-.briefGrid dd { color: #202c26; font-size: .9rem; line-height: 1.55; margin: 0; overflow-wrap: anywhere; }
-.briefWide { grid-column: 1 / -1; }
+.followUp h3 { color: #34463c; font-size: .9rem; margin: 0 0 .9rem; }
 .briefList { display: grid; gap: .45rem; list-style: disc; margin: 0; padding-left: 1.1rem; }
 .briefList li { padding-left: .15rem; }
 .followUp { background: #edf5ef; border-left: 3px solid #167452; border-radius: 8px; margin-top: 1rem; padding: 1rem 1.1rem; }
@@ -64,9 +76,8 @@
 .triagePending { background: #f5f8f6; border-radius: 8px; color: #5e6d67; line-height: 1.6; margin: 1.25rem 0 0; padding: 1rem; }
 @media (max-width: 620px) {
   .header { align-items: start; flex-direction: column; }
-  .fields, .briefGrid, .resultColumns { grid-template-columns: 1fr; }
+  .fields, .resultColumns { grid-template-columns: 1fr; }
   .descriptionField { grid-column: auto; }
-  .briefWide { grid-column: auto; }
   .sectionHeading { flex-direction: column; }
   .sourceBadge, .advisory { white-space: normal; }
 }

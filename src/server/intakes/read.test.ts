@@ -43,7 +43,7 @@ describe("intake reads", () => {
 
   it("returns compact summaries newest first and omits worker fields", async () => {
     dbMocks.findMany.mockResolvedValue([
-      { id: "new", title: "New", industry: "Retail", createdAt, status: "PENDING", errorCode: null },
+      { id: "new", title: "New", industry: "Retail", createdAt, status: "PENDING", errorCode: null, previousTriageJson: JSON.stringify(triage) },
       { id: "old", title: "Old", industry: "Retail", createdAt: new Date("2026-11-01T12:00:00.000Z"), status: "PROCESSING", errorCode: null },
     ]);
 
@@ -53,6 +53,7 @@ describe("intake reads", () => {
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     }));
     expect(result.map(({ id }) => id)).toEqual(["new", "old"]);
+    expect(result[0].tags).toEqual(triage.tags);
     expect(result[0]).not.toHaveProperty("attempt");
     expect(result[0]).not.toHaveProperty("leaseToken");
   });
@@ -71,7 +72,7 @@ describe("intake reads", () => {
       industry: "Retail",
       status: "COMPLETED",
       triage,
-      retryAvailable: false,
+      retryAvailable: true,
     });
     expect(result).not.toHaveProperty("attempt");
     expect(result).not.toHaveProperty("leaseToken");
@@ -89,12 +90,21 @@ describe("intake reads", () => {
 
     expect(result?.triage).toMatchObject({
       ...legacyTriage,
-      projectBrief: { objective: null, primaryUsers: null, keyRequirements: [], constraints: [], successCriteria: [] },
       followUpQuestions: [
         "What outcome should define success for this project?",
         "Which users, workflows, and integrations should the team prioritize first?",
       ],
     });
+  });
+
+  it("reads a stored triage with the old brief without exposing the brief", async () => {
+    dbMocks.findUnique.mockResolvedValue(record({ triageJson: JSON.stringify({
+      ...triage,
+      projectBrief: { objective: null, primaryUsers: null, keyRequirements: [], constraints: [], successCriteria: [] },
+    }) }));
+    const result = await getIntake("cmvypx38700008ats8z8y8brj");
+    expect(result?.triage).toEqual(triage);
+    expect(result?.triage).not.toHaveProperty("projectBrief");
   });
 
   it("keeps source readable if stored triage JSON is corrupt", async () => {

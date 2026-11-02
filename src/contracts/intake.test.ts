@@ -43,7 +43,7 @@ describe("shared intake contracts", () => {
       createdAt: "2026-11-02T12:00:00.000Z",
       status: "COMPLETED",
       triage: triageFixture,
-      retryAvailable: false,
+      retryAvailable: true,
     };
     expect(PublicIntakeSchema.safeParse(publicIntake).success).toBe(true);
     expect(PublicIntakeSchema.safeParse({ ...publicIntake, errorCode: "private provider error" }).success).toBe(false);
@@ -58,7 +58,7 @@ describe("shared intake contracts", () => {
   it("rejects duplicate tags and one-sentence summaries", () => {
     expect(TriageSchema.safeParse({ ...triageFixture, tags: ["Retail", "retail", "Web"] }).success).toBe(false);
     expect(TriageSchema.safeParse({ ...triageFixture, summary: "Only one sentence." }).success).toBe(false);
-    expect(TriageSchema.safeParse({ ...triageFixture, projectBrief: undefined }).success).toBe(false);
+    expect(TriageSchema.safeParse({ ...triageFixture, projectBrief: {} }).success).toBe(false);
     expect(TriageSchema.safeParse({ ...triageFixture, followUpQuestions: ["Question one?"] }).success).toBe(false);
   });
 });

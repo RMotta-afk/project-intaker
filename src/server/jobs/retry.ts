@@ -12,7 +12,7 @@ export interface RetryOptions {
   now?: () => Date;
 }
 
-/** Requeue one failed run while preserving the original intake row and source. */
+/** Requeue a failed or completed run while preserving its prior result for comparison. */
 export async function retryIntake(intakeId: string, options: RetryOptions = {}): Promise<RetryResult> {
   const now = (options.now ?? (() => new Date()))();
 
@@ -20,16 +20,17 @@ export async function retryIntake(intakeId: string, options: RetryOptions = {}):
     const db = getDb();
     const existing = await db.intake.findUnique({
       where: { id: intakeId },
-      select: { id: true, status: true, maxAttempts: true },
+      select: { id: true, status: true, maxAttempts: true, triageJson: true },
     });
     if (!existing) return { kind: "not-found" };
-    if (existing.status !== "FAILED") return { kind: "conflict" };
+    if (existing.status !== "FAILED" && existing.status !== "COMPLETED") return { kind: "conflict" };
 
     const updated = await db.intake.updateMany({
-      where: { id: intakeId, status: "FAILED" },
+      where: { id: intakeId, status: existing.status },
       data: {
         status: "PENDING",
         triageJson: null,
+        ...(existing.status === "COMPLETED" ? { previousTriageJson: existing.triageJson } : {}),
         errorCode: null,
         attempt: 0,
         availableAt: now,

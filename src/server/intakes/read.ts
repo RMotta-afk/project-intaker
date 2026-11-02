@@ -1,5 +1,7 @@
 import {
   LegacyTriageSchema,
+  HistoricalProjectBriefSchema,
+  ClarificationAnswersSchema,
   IntakeListItemSchema,
   IntakeStatusSchema,
   PublicIntakeSchema,
@@ -25,18 +27,19 @@ function parseTriage(triageJson: string | null): Triage | undefined {
     const result = TriageSchema.safeParse(parsed);
     if (result.success) return result.data;
 
+    if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed) && "projectBrief" in parsed) {
+      const { projectBrief, ...withoutBrief } = parsed;
+      if (HistoricalProjectBriefSchema.safeParse(projectBrief).success) {
+        const historical = TriageSchema.safeParse(withoutBrief);
+        if (historical.success) return historical.data;
+      }
+    }
+
     const legacy = LegacyTriageSchema.safeParse(parsed);
     if (!legacy.success) return undefined;
 
     return TriageSchema.parse({
       ...legacy.data,
-      projectBrief: {
-        objective: null,
-        primaryUsers: null,
-        keyRequirements: [],
-        constraints: [],
-        successCriteria: [],
-      },
       followUpQuestions: [
         "What outcome should define success for this project?",
         "Which users, workflows, and integrations should the team prioritize first?",
@@ -69,12 +72,15 @@ export async function listIntakes(): Promise<IntakeListItem[]> {
       createdAt: true,
       status: true,
       errorCode: true,
+      triageJson: true,
+      previousTriageJson: true,
     },
   });
 
   return records.flatMap((record) => {
     const status = parseStatus(record.status);
     if (!status.success) return [];
+    const searchableTriage = parseTriage(record.triageJson ?? record.previousTriageJson);
 
     const item = {
       id: record.id,
@@ -83,6 +89,7 @@ export async function listIntakes(): Promise<IntakeListItem[]> {
       createdAt: record.createdAt.toISOString(),
       status: status.data,
       ...(parseErrorCode(record.errorCode) ? { errorCode: parseErrorCode(record.errorCode) } : {}),
+      ...(searchableTriage ? { tags: searchableTriage.tags } : {}),
     };
     const result = IntakeListItemSchema.safeParse(item);
     return result.success ? [result.data] : [];
@@ -102,6 +109,8 @@ export async function getIntake(id: string): Promise<PublicIntake | null> {
       industry: true,
       status: true,
       triageJson: true,
+      previousTriageJson: true,
+      clarificationAnswersJson: true,
       errorCode: true,
       createdAt: true,
     },
@@ -112,6 +121,12 @@ export async function getIntake(id: string): Promise<PublicIntake | null> {
   if (!status.success) throw new Error("Stored intake has an invalid status.");
 
   const triage = parseTriage(record.triageJson);
+  const previousTriage = parseTriage(record.previousTriageJson);
+  let clarificationAnswers: unknown = [];
+  try {
+    const parsed = ClarificationAnswersSchema.safeParse(JSON.parse(record.clarificationAnswersJson ?? "[]"));
+    clarificationAnswers = parsed.success ? parsed.data : [];
+  } catch { /* Preserve the source when answers are corrupt. */ }
   const result = PublicIntakeSchema.safeParse({
     id: record.id,
     title: record.title,
@@ -122,8 +137,10 @@ export async function getIntake(id: string): Promise<PublicIntake | null> {
     createdAt: record.createdAt.toISOString(),
     status: status.data,
     ...(triage ? { triage } : {}),
+    ...(previousTriage ? { previousTriage } : {}),
+    clarificationAnswers,
     ...(parseErrorCode(record.errorCode) ? { errorCode: parseErrorCode(record.errorCode) } : {}),
-    retryAvailable: status.data === "FAILED",
+    retryAvailable: status.data === "FAILED" || status.data === "COMPLETED",
   });
 
   if (!result.success) throw new Error("Stored intake does not match the public contract.");

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { TriageFailureCode } from "../../contracts/intake";
-import { buildTriageRequest } from "./request";
-import type { IntakeInput } from "../../contracts/intake";
+import { buildTriageRequest, type TriageTask } from "./request";
+import type { TriageInput } from "../../contracts/intake";
 
 export const OPENROUTER_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
 export const PROVIDER_TIMEOUT_MS = 15_000;
@@ -98,8 +98,10 @@ async function readBody(response: Response): Promise<{ body: string; tooLarge: b
 
 /** Makes exactly one bounded OpenRouter call. Retries belong to the durable worker. */
 export async function requestOpenRouterCompletion(
-  intake: IntakeInput,
+  intake: TriageInput,
+  task: TriageTask,
   config: OpenRouterConfig = {},
+  repairContent?: string,
 ): Promise<string> {
   if (typeof window !== "undefined") {
     throw new Error("OpenRouter transport is server-only.");
@@ -130,7 +132,7 @@ export async function requestOpenRouterCompletion(
         "HTTP-Referer": referrer,
         "X-Title": "Project Intaker",
       },
-      body: JSON.stringify(buildTriageRequest(intake, model)),
+      body: JSON.stringify(buildTriageRequest(intake, model, task, repairContent)),
       signal: controller.signal,
     });
 

@@ -1,4 +1,8 @@
 .section { display: grid; gap: 2rem; }
+.filters { display: grid; gap: 1rem; grid-template-columns: repeat(2, minmax(0, 18rem)); }
+.filters label { color: #34463c; display: grid; font-size: .82rem; font-weight: 700; gap: .4rem; min-width: 0; }
+.filters input, .filters select { background: #fff; border: 1px solid #b8c9bf; border-radius: 8px; box-sizing: border-box; color: #17211d; font: inherit; min-height: 2.7rem; padding: .6rem .75rem; width: 100%; }
+.filters input:focus-visible, .filters select:focus-visible { outline: 3px solid #78b59c; outline-offset: 2px; }
 .headingRow { align-items: end; display: flex; gap: 1.5rem; justify-content: space-between; }
 .eyebrow { color: #167452; font-size: .72rem; font-weight: 800; letter-spacing: .13em; margin: 0 0 .6rem; }
 .headingRow h1 { color: #17211d; font-size: clamp(2rem, 5vw, 3rem); letter-spacing: -.045em; line-height: 1.05; margin: 0; }
@@ -31,6 +35,7 @@
 .empty p, .message p { color: #5e6d67; line-height: 1.55; margin: 0 0 1.2rem; }
 .message button { background: transparent; border: 1px solid #b8c9bf; border-radius: 7px; color: #164d39; cursor: pointer; font: inherit; font-weight: 700; padding: .65rem .9rem; }
 @media (max-width: 650px) {
+  .filters { grid-template-columns: minmax(0, 1fr); }
   .headingRow { align-items: stretch; flex-direction: column; }
   .createLink { align-self: start; }
   .cardLink { grid-template-columns: minmax(0, 1fr) auto; }

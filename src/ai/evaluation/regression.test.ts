@@ -15,21 +15,22 @@ describe("triage evaluation regressions", () => {
   it.each(triageEvaluationCases)("passes each typed evaluation intake through the adapter: $id", async ({ intake }) => {
     const fetchImpl = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       void input;
-      void init;
-      return response(200, JSON.stringify(validTriage));
+      const task = JSON.parse(String(init?.body)).messages[2].content as string;
+      if (task.includes("summary")) return response(200, JSON.stringify({ summary: validTriage.summary }));
+      if (task.includes("tags")) return response(200, JSON.stringify({ tags: validTriage.tags }));
+      return response(200, JSON.stringify({ risks: validTriage.risks, followUpQuestions: validTriage.followUpQuestions }));
     });
 
     const result = await generateTriage(intake, { apiKey: "offline-test-key", fetchImpl });
 
     expect(TriageSchema.parse(result)).toEqual(validTriage);
-    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
     const requestBody = JSON.parse(String(fetchImpl.mock.calls[0][1]?.body)) as {
       max_tokens: number;
       messages: Array<{ content: string }>;
     };
-    expect(requestBody.max_tokens).toBe(1_600);
-    expect(requestBody.messages[0].content).toContain("prioritizing what a team needs to begin");
-    expect(requestBody.messages[0].content).toContain("Do not infer missing facts");
+    expect(requestBody.max_tokens).toBe(800);
+    expect(requestBody.messages[0].content).toContain("Ground every statement");
     expect(requestBody.messages[1].content).toContain(JSON.stringify(intake));
   });
 
