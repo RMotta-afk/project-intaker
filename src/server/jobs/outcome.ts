@@ -80,7 +80,8 @@ export async function failClaim(
       });
       if (!current) return { kind: "stale-token" } as const;
 
-      const retryable = isRetryable(errorCode) && current.attempt < current.maxAttempts;
+      const explicitlyTerminal = typeof failure === "object" && failure !== null && "retryable" in failure && failure.retryable === false;
+      const retryable = !explicitlyTerminal && isRetryable(errorCode) && current.attempt < current.maxAttempts;
       const where = {
         id: intakeId,
         status: "PROCESSING",
@@ -89,7 +90,7 @@ export async function failClaim(
       };
 
       if (!retryable) {
-        const terminalCode = isRetryable(errorCode) ? "ATTEMPTS_EXHAUSTED" : errorCode;
+        const terminalCode = !explicitlyTerminal && isRetryable(errorCode) ? "ATTEMPTS_EXHAUSTED" : errorCode;
         const updated = await transaction.intake.updateMany({
           where,
           data: {

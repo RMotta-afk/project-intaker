@@ -1,3 +1,4 @@
+import { loadEnvConfig } from "@next/env";
 import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
 import { runWorker } from "./worker";
@@ -34,6 +35,7 @@ async function loadAdapter(): Promise<GenerateTriage> {
 }
 
 async function main(): Promise<void> {
+  loadEnvConfig(process.cwd());
   const generateTriage = await loadAdapter();
   const controller = new AbortController();
   const stop = () => controller.abort();

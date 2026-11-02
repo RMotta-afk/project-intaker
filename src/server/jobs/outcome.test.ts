@@ -116,6 +116,15 @@ describe("guarded job outcomes", () => {
     expect(dbMocks.updateMany.mock.calls[0][0].data).toMatchObject({ status: "FAILED", errorCode: "ATTEMPTS_EXHAUSTED" });
   });
 
+  it("preserves the provider code for an explicitly terminal unavailable configuration", async () => {
+    dbMocks.findFirst.mockResolvedValue({ attempt: 1, maxAttempts: 3 });
+    dbMocks.updateMany.mockResolvedValue({ count: 1 });
+
+    await expect(failClaim("intake-1", "lease-current", { code: "PROVIDER_UNAVAILABLE", retryable: false }))
+      .resolves.toEqual({ kind: "failed", errorCode: "PROVIDER_UNAVAILABLE" });
+    expect(dbMocks.updateMany.mock.calls[0][0].data).toMatchObject({ status: "FAILED", errorCode: "PROVIDER_UNAVAILABLE" });
+  });
+
   it("rejects stale failure tokens", async () => {
     dbMocks.findFirst.mockResolvedValue(null);
     await expect(failClaim("intake-1", "old-token", "PROVIDER_ERROR")).resolves.toEqual({ kind: "stale-token" });

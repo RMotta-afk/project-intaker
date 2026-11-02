@@ -10,6 +10,8 @@ permissions:
 jobs:
   quality:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: file:./test.db
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -17,7 +19,9 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm run db:generate
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
+      - run: npm run db:test
       - run: npm run build

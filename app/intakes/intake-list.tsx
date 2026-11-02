@@ -23,7 +23,7 @@ export function IntakeList({
   error,
   onRetry,
 }: {
-  intakes: PublicIntake[];
+  intakes: Pick<PublicIntake, "id" | "title" | "industry" | "createdAt" | "status">[];
   loading?: boolean;
   error?: string;
   onRetry?: () => void;
