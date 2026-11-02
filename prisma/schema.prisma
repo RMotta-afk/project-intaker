@@ -28,3 +28,10 @@ model Intake {
   @@index([status, availableAt, createdAt])
   @@index([status, leaseExpiresAt])
 }
+
+model IndustryTag {
+  id         String   @id @default(cuid())
+  name       String
+  normalized String   @unique
+  createdAt  DateTime @default(now())
+}

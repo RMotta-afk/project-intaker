@@ -1,17 +1,63 @@
-.form { display: grid; gap: 1.5rem; }
+.form { --form-legend-size: 1rem; --form-label-size: .82rem; --form-control-size: 1rem; display: grid; gap: 1.5rem; }
 .field { display: grid; gap: .45rem; }
-.field label { font-size: .95rem; font-weight: 700; }
+.rangeField.legendFieldCard { background: linear-gradient(145deg, #f5f9f6, #edf4ef); border: 1px solid #bfd1c5; border-radius: 14px; box-shadow: 0 5px 16px #183b2912; gap: .7rem; padding: .65rem 1.1rem 1.1rem; transition: border-color .15s ease, box-shadow .15s ease; }
+.rangeField.legendFieldCard:focus-within { border-color: #75a88c; box-shadow: 0 0 0 3px #16745218, 0 5px 16px #183b2912; }
+.srOnly { clip: rect(0, 0, 0, 0); clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px; }
+.field label { font-size: var(--form-label-size); font-weight: 700; }
 .field label span { color: #a93d35; }
 .hint { margin: 0; color: #5e6d67; font-size: .875rem; line-height: 1.5; }
-.field input, .field textarea {
+.field input, .field textarea, .field select {
   width: 100%; border: 1px solid #c7d2cc; border-radius: 10px; background: #fff;
-  color: #17211d; font: inherit; padding: .85rem 1rem; outline: none;
+  color: #17211d; font: inherit; font-size: var(--form-control-size); padding: .85rem 1rem; outline: none;
 }
 .field textarea { min-height: 8rem; resize: vertical; }
-.field input:focus, .field textarea:focus { border-color: #167452; box-shadow: 0 0 0 3px #16745224; }
-.field input[aria-invalid="true"], .field textarea[aria-invalid="true"] { border-color: #b23d35; }
+.legendFieldCard > .field input, .legendFieldCard > .field textarea { background: #fff; border: 1px solid #aebfb4; border-radius: 11px; box-shadow: inset 0 1px 2px #183b2908; padding: .95rem 1rem; }
+.field input:focus, .field textarea:focus, .field select:focus { border-color: #167452; box-shadow: 0 0 0 3px #16745224; }
+.field input[aria-invalid="true"], .field textarea[aria-invalid="true"], .field select[aria-invalid="true"] { border-color: #b23d35; }
 .error, .submitError { color: #9d3029; font-size: .875rem; margin: 0; }
 .submitError { border-left: 3px solid #b23d35; background: #fff4f2; padding: .75rem 1rem; }
+.toast { position: sticky; top: .75rem; z-index: 2; border: 1px solid #f1c4bc; border-left: 4px solid #b23d35; border-radius: 8px; background: #fff4f2; box-shadow: 0 8px 24px #17211d1a; color: #78352e; font-size: .925rem; font-weight: 650; margin: 0; padding: .85rem 1rem; }
+.industryBox { position: relative; }
+.chips { align-items: center; border: 1px solid #aebfb4; border-radius: 11px; background: #fff; box-shadow: inset 0 1px 2px #183b2908; display: flex; flex-wrap: wrap; gap: .5rem; min-height: 3.2rem; padding: .5rem .65rem; }
+.chips:focus-within { border-color: #167452; box-shadow: 0 0 0 3px #16745224; }
+.chips:has(input[aria-invalid="true"]) { border-color: #b23d35; }
+.chips input { background: transparent; border: 0; box-shadow: none; flex: 1 0 12rem; min-width: 9rem; outline: none; padding: .35rem; }
+.chips input:focus { border: 0; box-shadow: none; }
+.chip { align-items: center; background: #edf5ef; border: 1px solid #cddfd2; border-radius: 999px; color: #315d43; display: inline-flex; font-size: .84rem; gap: .35rem; padding: .28rem .4rem .28rem .65rem; }
+.chip button { align-items: center; background: transparent; border: 0; border-radius: 50%; color: inherit; cursor: pointer; display: inline-flex; font: inherit; font-size: 1rem; height: 1.35rem; justify-content: center; line-height: 1; width: 1.35rem; }
+.chip button:hover { background: #d5e7da; }
+.chip button:focus-visible, .suggestions button:focus-visible { outline: 2px solid #167452; outline-offset: 2px; }
+.suggestions { background: white; border: 1px solid #d6dfd9; border-radius: 9px; box-shadow: 0 10px 24px #17211d1a; left: 0; max-height: 15rem; overflow: auto; position: absolute; right: 0; top: calc(100% + .35rem); z-index: 3; }
+.suggestions p { color: #5e6d67; font-size: .85rem; margin: 0; padding: .75rem .9rem; }
+.suggestions ul { list-style: none; margin: 0; padding: .3rem; }
+.suggestions button { background: transparent; border: 0; border-radius: 6px; color: #202c26; cursor: pointer; font: inherit; text-align: left; width: 100%; padding: .6rem .7rem; }
+.suggestions button:hover { background: #edf5ef; }
+.suggestions .addSuggestion { border-top: 1px solid #e5ebe7; border-radius: 0; color: #146b4b; font-weight: 700; }
+.rangeField { border: 0; display: grid; gap: .75rem; margin: 0; min-width: 0; padding: 0; }
+.rangeField legend { font-size: .95rem; font-weight: 700; margin-bottom: -.3rem; padding: 0; }
+.rangeField legend span { color: #a93d35; }
+.legendFieldCard legend { background: #f4f8f5; border-radius: 999px; color: #193a2b; font-size: var(--form-legend-size); font-weight: 750; margin: 0 0 .1rem .35rem; padding: .1rem .75rem; text-align: left; }
+.legendFieldCard legend span { color: #a93d35; }
+.budgetField { gap: .9rem; }
+.budgetField .hint { max-width: 58ch; }
+.budgetCurrency { max-width: 12rem; }
+.budgetCurrency label { color: #53675c; font-size: var(--form-label-size); font-weight: 750; letter-spacing: .06em; text-transform: uppercase; }
+.budgetCurrency select { background-color: #fff; border-color: #c8d7ce; font-weight: 700; min-height: 2.85rem; }
+.pairedFields { display: grid; gap: 1rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.budgetValues { gap: .8rem; }
+.budgetValues .field { background: #fff; border: 1px solid #dce7df; border-radius: 11px; box-shadow: 0 3px 10px #183b290c; gap: .5rem; min-width: 0; padding: .85rem; transition: border-color .15s ease, box-shadow .15s ease; }
+.budgetValues .field:focus-within { border-color: #5c9c7e; box-shadow: 0 0 0 3px #16745218, 0 3px 10px #183b290c; }
+.budgetValues label { color: #50635a; font-size: var(--form-label-size); font-weight: 750; letter-spacing: .025em; }
+.budgetValues input { background: #f8faf8; border-color: #e1e9e4; border-radius: 8px; font-size: var(--form-control-size); font-variant-numeric: tabular-nums; font-weight: 650; padding: .75rem .8rem; }
+.budgetValues .field:focus-within input { background: #fff; }
+.budgetField .error { background: #fff4f2; border-radius: 7px; padding: .6rem .7rem; }
+.dateField { gap: .9rem; }
+.dateField .field { background: #fff; border: 1px solid #dce7df; border-radius: 11px; box-shadow: 0 3px 10px #183b290c; gap: .5rem; min-width: 0; padding: .85rem; transition: border-color .15s ease, box-shadow .15s ease; }
+.dateField .field:focus-within { border-color: #5c9c7e; box-shadow: 0 0 0 3px #16745218, 0 3px 10px #183b290c; }
+.dateField .field label { color: #50635a; font-size: var(--form-label-size); font-weight: 750; letter-spacing: .025em; }
+.dateField .field input { background: #f8faf8; border-color: #e1e9e4; border-radius: 8px; font-variant-numeric: tabular-nums; padding: .75rem .8rem; }
+.dateField .field:focus-within input { background: #fff; }
+.dateField .error { background: #fff4f2; border-radius: 7px; padding: .6rem .7rem; }
 .actions { align-items: center; border-top: 1px solid #e0e7e2; display: flex; gap: 1rem; justify-content: space-between; padding-top: 1.25rem; }
 .actions p { color: #5e6d67; font-size: .875rem; line-height: 1.5; margin: 0; }
 .actions button { background: #146b4b; border: 0; border-radius: 8px; color: white; cursor: pointer; font: inherit; font-weight: 700; padding: .8rem 1.2rem; }
@@ -19,6 +65,9 @@
 .actions button:focus-visible { outline: 3px solid #78b59c; outline-offset: 3px; }
 .actions button:disabled { cursor: wait; opacity: .65; }
 @media (max-width: 540px) {
+  .pairedFields { grid-template-columns: 1fr; }
+  .legendFieldCard { padding: .6rem .85rem .9rem; }
+  .legendFieldCard legend { margin-left: .1rem; padding-inline: .55rem; }
   .actions { align-items: stretch; flex-direction: column; }
   .actions button { width: 100%; }
 }
