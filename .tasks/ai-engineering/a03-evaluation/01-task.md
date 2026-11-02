@@ -1,7 +1,7 @@
 # A03.1: Prepare representative cases
 
-Status: TODO
-Owner: Unassigned
+Status: DONE
+Owner: Codex (a03_cases)
 Parent feature: [feature brief](README.md)
 Depends on: P01
 Blocks: downstream tasks referencing A03.1; parent feature completion
@@ -14,9 +14,9 @@ Owns: Evaluation intake fixtures and review rubric.
 
 ## Small implementation steps
 
-- [ ] Add clear request, missing detail, budget/timeline conflict, unusual industry and injection-like input. Define actionable risks, faithfulness and unsupported-claim review criteria; avoid subjective benchmark claims.
-- [ ] Keep edits within claimed ownership; request shared-file changes from their owner.
-- [ ] Verify the acceptance below and record exact evidence.
+- [x] Add clear request, missing detail, budget/timeline conflict, unusual industry and injection-like input. Define actionable risks, faithfulness and unsupported-claim review criteria; avoid subjective benchmark claims.
+- [x] Keep edits within claimed ownership; request shared-file changes from their owner.
+- [x] Verify the acceptance below and record exact evidence.
 
 ## Acceptance and verification
 
@@ -26,4 +26,8 @@ A task is DONE only after its dependency outputs are integrated, its required ch
 
 ## Handoff
 
-Copy [the handoff template](../../templates/HANDOFF.md) here before stopping. Include changed paths/branch, commands and results, contract version, unresolved risks, next task and exact resumption step. Keep status TODO until claimed; do not imply work or checks have run.
+- Branch: `feature/ai-engineering`; commit `70edbd2`.
+- Contract: v1 in `src/contracts/intake.ts`.
+- Verification: `Typed cases checked by `npm run typecheck`; rubric reviewed`.
+- Next: A03.2 regression coverage (accepted in `f9f9470`).
+- Changed: `cases.ts`, `review-rubric.md`; five representative scenarios and source-fidelity/actionability criteria.

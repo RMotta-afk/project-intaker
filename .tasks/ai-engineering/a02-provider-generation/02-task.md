@@ -1,7 +1,7 @@
 # A02.2: Implement provider transport
 
-Status: TODO
-Owner: Unassigned
+Status: DONE
+Owner: Codex
 Parent feature: [feature brief](README.md)
 Depends on: P01
 Blocks: downstream tasks referencing A02.2; parent feature completion
@@ -14,9 +14,9 @@ Owns: Server-only provider HTTP/config/timeout and error classifier tests.
 
 ## Small implementation steps
 
-- [ ] Use chosen OpenRouter model/settings; key never enters client. Set finite timeout shorter than lease and classify missing/auth config as terminal, timeouts/429/selected 5xx as transient. Worker owns retry; transport makes one bounded call per attempt.
-- [ ] Keep edits within claimed ownership; request shared-file changes from their owner.
-- [ ] Verify the acceptance below and record exact evidence.
+- [x] Use chosen OpenRouter model/settings; key never enters client. Set finite timeout shorter than lease and classify missing/auth config as terminal, timeouts/429/selected 5xx as transient. Worker owns retry; transport makes one bounded call per attempt.
+- [x] Keep edits within claimed ownership; request shared-file changes from their owner.
+- [x] Verify the acceptance below and record exact evidence.
 
 ## Acceptance and verification
 
@@ -26,4 +26,8 @@ A task is DONE only after its dependency outputs are integrated, its required ch
 
 ## Handoff
 
-Copy [the handoff template](../../templates/HANDOFF.md) here before stopping. Include changed paths/branch, commands and results, contract version, unresolved risks, next task and exact resumption step. Keep status TODO until claimed; do not imply work or checks have run.
+- Branch: `feature/ai-engineering`; commit `34d88ee`.
+- Contract: v1 in `src/contracts/intake.ts`.
+- Verification: `npm test -- --run src/ai/provider` — transport tests passed`.
+- Next: A02.3 adapter (accepted in `e3126c1`).
+- Changed: `transport.ts`, `transport.test.ts`; 15-second timeout, one request per attempt, server-only env key, safe bounded diagnostics and classified errors. Live provider call not run.

@@ -1,7 +1,7 @@
 # A01.2: Implement format-quality checks
 
-Status: TODO
-Owner: Unassigned
+Status: DONE
+Owner: Codex (a01_components)
 Parent feature: [feature brief](README.md)
 Depends on: P01
 Blocks: downstream tasks referencing A01.2; parent feature completion
@@ -14,9 +14,9 @@ Owns: AI format validator and focused tests.
 
 ## Small implementation steps
 
-- [ ] Extend shared validation without copying schemas: exactly three distinct normalized tags, approximate 2–3 sentence rule and non-empty bounded risks. Document sentence-count limitations.
-- [ ] Keep edits within claimed ownership; request shared-file changes from their owner.
-- [ ] Verify the acceptance below and record exact evidence.
+- [x] Extend shared validation without copying schemas: exactly three distinct normalized tags, approximate 2–3 sentence rule and non-empty bounded risks. Document sentence-count limitations.
+- [x] Keep edits within claimed ownership; request shared-file changes from their owner.
+- [x] Verify the acceptance below and record exact evidence.
 
 ## Acceptance and verification
 
@@ -26,4 +26,8 @@ A task is DONE only after its dependency outputs are integrated, its required ch
 
 ## Handoff
 
-Copy [the handoff template](../../templates/HANDOFF.md) here before stopping. Include changed paths/branch, commands and results, contract version, unresolved risks, next task and exact resumption step. Keep status TODO until claimed; do not imply work or checks have run.
+- Branch: `feature/ai-engineering`; commit `6cd1dec`.
+- Contract: v1 in `src/contracts/intake.ts`.
+- Verification: `npm test -- --run src/ai/validated-triage/parser.test.ts src/ai/validated-triage/quality.test.ts` — 14/14 passed`.
+- Next: A01.3 integration (accepted in `145b7e8`).
+- Changed: `quality.ts`, `quality.test.ts`; shared schema enforces normalization, summary sentence approximation, distinct tags and risk bounds.

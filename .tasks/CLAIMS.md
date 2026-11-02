@@ -4,7 +4,14 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | P01 | Codex | DONE | shared workspace | scaffold, scripts, `src/contracts/intake.ts`, fixtures, local setup | v1 in `src/contracts/intake.ts` | Ready for front/back/AI consumers |
 | P02 | Codex | DONE | shared workspace | `.husky`, `.github/workflows/quality.yml`, `Dockerfile`, npm scripts | v1 scripts in package.json | CI local-equivalent verified; Docker unavailable |
-| P03 | Codex | BLOCKED | shared workspace | setup/check documentation only | v1 | B03, F01/F02/F03, A03 must be implemented/integrated |
+| P03 | Codex | BLOCKED | shared workspace | setup/check documentation only | v1 | B03 and F01/F02/F03 must be implemented/integrated |
+| A01.1 + A01.2 | Codex / a01_components | DONE | shared workspace; `6cd1dec` | `src/ai/validated-triage/parser.ts`, `quality.ts`, focused tests | v1 in `src/contracts/intake.ts` | A01.3 accepted in `145b7e8` |
+| A02.1 + A02.2 | Codex / a02_transport | DONE | shared workspace; `34d88ee` | `src/ai/provider/request.ts`, `transport.ts`, focused tests | v1 in `src/contracts/intake.ts` | A02.3 accepted in `e3126c1` |
+| A03.1 | Codex / a03_cases | DONE | shared workspace; `70edbd2` | `src/ai/evaluation/cases.ts`, `src/ai/evaluation/review-rubric.md` | v1 in `src/contracts/intake.ts` | A03.2 accepted in `f9f9470` |
+| A01.3 | Codex | DONE | shared workspace; `145b7e8` | `src/ai/validated-triage/index.ts` and tests | v1 in `src/contracts/intake.ts` | A01 integrated boundary complete |
+| A02.3 | Codex | DONE | shared workspace; `e3126c1` | `src/ai/provider/generate.ts`, tests, setup notes | v1 in `src/contracts/intake.ts` | Available to B02.3; live call unrun |
+| A03.2 | Codex | DONE | shared workspace; `f9f9470` | `src/ai/evaluation/regression.test.ts` | v1 in `src/contracts/intake.ts` | A03.3 accepted in `b16f173` |
+| A03.3 | Codex | DONE | shared workspace; `b16f173` | `src/ai/evaluation/review-report.md` | prompt `triage-v1`, adapter default model | A03 integrated evidence complete; live review pending credentials |
 
 ## Shared-file owners
 

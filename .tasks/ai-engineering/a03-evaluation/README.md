@@ -1,7 +1,7 @@
 # A03: Small reproducible triage quality review
 
-Status: TODO
-Owner: Unassigned
+Status: DONE
+Owner: Codex
 Area: ai-engineering
 Depends on: A01; A02 for adapter checks
 Scope: Required workflow and/or confirmed candidate decisions; P02 includes explicitly requested delivery tooling.
@@ -12,9 +12,9 @@ Representative cases and honest evidence distinguish schema validity from qualit
 
 ## Tasks
 
-- [ ] [A03.1: Prepare representative cases](01-task.md) — depends on P01.
-- [ ] [A03.2: Add deterministic regression coverage](02-task.md) — depends on A03.1 + A02.
-- [ ] [A03.3: Record qualitative review](03-task.md) — depends on A03.2; live credentials only for live review.
+- [x] [A03.1: Prepare representative cases](01-task.md) — depends on P01.
+- [x] [A03.2: Add deterministic regression coverage](02-task.md) — depends on A03.1 + A02.
+- [x] [A03.3: Record qualitative review](03-task.md) — depends on A03.2; live credentials only for live review.
 
 ## Parallel boundary
 
@@ -22,11 +22,17 @@ Child tasks with satisfied dependencies may be assigned separately only after re
 
 ## Feature acceptance
 
-- [ ] All three child tasks and their focused verification complete.
-- [ ] Demonstrate the complete feature outcome above through its actual integration boundary.
-- [ ] Preserve original intake, safe errors and requirement/decision distinctions where relevant.
-- [ ] Integrator accepts handoff and updates downstream readiness in the local task map.
+- [x] All three child tasks and their focused verification complete.
+- [x] Demonstrate the complete feature outcome above through its actual integration boundary.
+- [x] Preserve original intake, safe errors and requirement/decision distinctions where relevant.
+- [x] Integrator accepts handoff and updates downstream readiness in the local task map.
 
 ## Handoff
 
-Use [HANDOFF.md](../../templates/HANDOFF.md), including feature-level evidence and remaining consumers. Do not mark feature DONE solely because individual components work with mocks.
+- Feature: A03; status DONE; owner Codex; branch `feature/ai-engineering`.
+- Commits: `70edbd2` (cases/rubric), `f9f9470` (offline regression suite), `b16f173` (review evidence).
+- Contract: v1 `IntakeInput` and `TriageSchema`; prompt `triage-v1`; adapter default model `openai/gpt-4o-mini`.
+- Outcome: five representative typed cases, qualitative source-fidelity rubric, and deterministic mocked tests through the actual generation adapter.
+- Verification: regression cases 10/10 passed; full suite 53/53; typecheck, lint, and production build passed.
+- Manual/live quality review: unrun because no provider key was configured; report makes no model quality claims.
+- Next step: repeat manual rubric review when an authorized provider key and output are available.

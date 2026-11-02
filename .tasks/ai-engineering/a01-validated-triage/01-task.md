@@ -1,7 +1,7 @@
 # A01.1: Implement strict response parser
 
-Status: TODO
-Owner: Unassigned
+Status: DONE
+Owner: Codex (a01_components)
 Parent feature: [feature brief](README.md)
 Depends on: P01
 Blocks: downstream tasks referencing A01.1; parent feature completion
@@ -14,9 +14,9 @@ Owns: AI response extraction/parser and parser tests.
 
 ## Small implementation steps
 
-- [ ] Use shared structural triage schema, require JSON and reject empty/malformed/unknown output. Define any envelope extraction explicitly; never manufacture missing values or silently truncate tags.
-- [ ] Keep edits within claimed ownership; request shared-file changes from their owner.
-- [ ] Verify the acceptance below and record exact evidence.
+- [x] Use shared structural triage schema, require JSON and reject empty/malformed/unknown output. Define any envelope extraction explicitly; never manufacture missing values or silently truncate tags.
+- [x] Keep edits within claimed ownership; request shared-file changes from their owner.
+- [x] Verify the acceptance below and record exact evidence.
 
 ## Acceptance and verification
 
@@ -26,4 +26,8 @@ A task is DONE only after its dependency outputs are integrated, its required ch
 
 ## Handoff
 
-Copy [the handoff template](../../templates/HANDOFF.md) here before stopping. Include changed paths/branch, commands and results, contract version, unresolved risks, next task and exact resumption step. Keep status TODO until claimed; do not imply work or checks have run.
+- Branch: `feature/ai-engineering`; commit `6cd1dec`.
+- Contract: v1 in `src/contracts/intake.ts`.
+- Verification: `npm test -- --run src/ai/validated-triage/parser.test.ts src/ai/validated-triage/quality.test.ts` — 14/14 passed`.
+- Next: A01.3 integration (accepted in `145b7e8`).
+- Changed: `parser.ts`, `parser.test.ts`; strict JSON object only, with malformed/empty/wrong/missing/extra content rejected.

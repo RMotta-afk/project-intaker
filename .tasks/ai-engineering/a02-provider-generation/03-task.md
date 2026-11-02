@@ -1,7 +1,7 @@
 # A02.3: Expose integrated generation adapter
 
-Status: TODO
-Owner: Unassigned
+Status: DONE
+Owner: Codex
 Parent feature: [feature brief](README.md)
 Depends on: A02.1 + A02.2 + A01
 Blocks: downstream tasks referencing A02.3; parent feature completion
@@ -14,9 +14,9 @@ Owns: generateTriage adapter and mocked integration tests.
 
 ## Small implementation steps
 
-- [ ] Join request, transport and validated response. Match shared signature/failure taxonomy; keep durable attempts in worker. Supply setup notes to platform owner; provide fake adapter to backend if needed.
-- [ ] Keep edits within claimed ownership; request shared-file changes from their owner.
-- [ ] Verify the acceptance below and record exact evidence.
+- [x] Join request, transport and validated response. Match shared signature/failure taxonomy; keep durable attempts in worker. Supply setup notes to platform owner; provide fake adapter to backend if needed.
+- [x] Keep edits within claimed ownership; request shared-file changes from their owner.
+- [x] Verify the acceptance below and record exact evidence.
 
 ## Acceptance and verification
 
@@ -26,4 +26,8 @@ A task is DONE only after its dependency outputs are integrated, its required ch
 
 ## Handoff
 
-Copy [the handoff template](../../templates/HANDOFF.md) here before stopping. Include changed paths/branch, commands and results, contract version, unresolved risks, next task and exact resumption step. Keep status TODO until claimed; do not imply work or checks have run.
+- Branch: `feature/ai-engineering`; commit `e3126c1`.
+- Contract: v1 in `src/contracts/intake.ts`.
+- Verification: `npm test -- --run src/ai/provider` — 18/18 passed; `npm run typecheck` and `npm run lint` passed`.
+- Next: B02.3 may consume `generateTriage`; no live provider run.
+- Changed: `generate.ts`, `generate.test.ts`, `.env.example`, root setup instructions; integrates transport and A01 validator. Missing configuration returns classified safe failure.

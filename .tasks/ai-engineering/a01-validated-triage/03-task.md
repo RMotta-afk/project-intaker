@@ -1,7 +1,7 @@
 # A01.3: Assemble validation boundary
 
-Status: TODO
-Owner: Unassigned
+Status: DONE
+Owner: Codex
 Parent feature: [feature brief](README.md)
 Depends on: A01.1 + A01.2
 Blocks: downstream tasks referencing A01.3; parent feature completion
@@ -14,9 +14,9 @@ Owns: Combined validate function and adversarial response cases.
 
 ## Small implementation steps
 
-- [ ] Combine parser/format checks into one boundary yielding validated triage or typed safe invalid-output failure. Default to terminal invalid output; add no repair loop unless separately agreed within total budget.
-- [ ] Keep edits within claimed ownership; request shared-file changes from their owner.
-- [ ] Verify the acceptance below and record exact evidence.
+- [x] Combine parser/format checks into one boundary yielding validated triage or typed safe invalid-output failure. Default to terminal invalid output; add no repair loop unless separately agreed within total budget.
+- [x] Keep edits within claimed ownership; request shared-file changes from their owner.
+- [x] Verify the acceptance below and record exact evidence.
 
 ## Acceptance and verification
 
@@ -26,4 +26,8 @@ A task is DONE only after its dependency outputs are integrated, its required ch
 
 ## Handoff
 
-Copy [the handoff template](../../templates/HANDOFF.md) here before stopping. Include changed paths/branch, commands and results, contract version, unresolved risks, next task and exact resumption step. Keep status TODO until claimed; do not imply work or checks have run.
+- Branch: `feature/ai-engineering`; commit `145b7e8`.
+- Contract: v1 in `src/contracts/intake.ts`.
+- Verification: `npm test -- --run src/ai/validated-triage` — 21/21 passed`.
+- Next: A01 feature handoff accepted.
+- Changed: `index.ts`, `index.test.ts`; parser and quality validation map to terminal typed `INVALID_OUTPUT` without returning raw provider content.
