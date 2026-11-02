@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { IntakeInputSchema, type IntakeInput } from "@/src/contracts/intake";
+import { IntakeInputSchema, type IntakeInput } from "@/contracts/intake";
 import styles from "./intake-form.module.css";
 
 type FieldName = keyof IntakeInput;

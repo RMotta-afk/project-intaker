@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { PublicIntake } from "@/src/contracts/intake";
+import type { PublicIntake } from "@/contracts/intake";
 import styles from "./intake-detail.module.css";
 
 const statusLabels: Record<PublicIntake["status"], string> = {
