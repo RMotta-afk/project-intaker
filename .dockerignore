@@ -1,0 +1,15 @@
+.git
+.github
+.husky
+.tasks
+.next
+node_modules
+coverage
+*.log
+.env
+.env.*
+prisma/*.db
+prisma/*.db-*
+AGENTS.md
+docs
+README.md
